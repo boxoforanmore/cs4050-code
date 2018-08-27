@@ -67,7 +67,6 @@ class PriorityQueue(object):
             self.front = new
             self.__length += 1
 
-    ''' you need to(at least) implement the following three methods'''
 
     def __pop_front(self):
         tmp = self.front
@@ -85,6 +84,7 @@ class PriorityQueue(object):
             self.front = tmp
             self.__length -= 1
             return value
+
 
     def __push_back(self, value):
         new = self.Node(value, None)
@@ -113,6 +113,7 @@ class PriorityQueue(object):
             self.back = current
             self.__length -= 1
             return value
+
     
     def delete(self, value=None):
         if value == None:
@@ -147,6 +148,7 @@ class PriorityQueue(object):
             return
         raise RuntimeError("Delete method is not working correctly")
 
+
     def middle_value(self):
         if self.empty():
             raise RuntimeError("PriorityQueue is empty")
@@ -163,6 +165,7 @@ class PriorityQueue(object):
                 fast = fast.next_node.next_node
             slow = slow.next_node
         return slow.value
+
 
     def middle(self):
         if self.empty():
@@ -181,35 +184,59 @@ class PriorityQueue(object):
             slow = slow.next_node
         return slow
 
+
     def search(self, value=None):
         if self.empty():
             raise RuntimeError("PriorityQueue is empty")
         pos = 1
+        updated = False
         for item in self:
             if value < item["priority"]:
                 return pos
             pos += 1
-        return pos
+            updated = True
+        if updated:
+            return pos
+        return 0
+
+
+    def names(self):
+        name_list = list()
+        for item in self:
+            name_list.append(item["name"])
+        return name_list
 
 
     def enqueue(self, priority, name, time=0):
         if priority > 5:
              priority = 5.0
-        temp = {"priority": priority,
+        item = {"priority": priority,
                 "name": name,
                 "time": time}
-        if self.empty():
-            self.__push_back(temp)
+        if self.empty() or (item["priority"] <= self.back.value["priority"]):
+            self.__push_back(item)
         else:
-            position = self.search(temp["priority"])
-            if position > len(self):
-                self.__push_back(temp)
+            #position = self.search(temp["priority"])
+            inserted = False
+            nxt = self.front
+            while nxt != self.back:
+                if nxt.next_node.value["priority"] < item["priority"]:
+                    temp = nxt.next_node
+                    nxt.next_node = self.Node(item, temp)
+                    inserted = True
+                    nxt = nxt.next_node
+                    continue
+                if inserted == True:
+                    nxt.value["priority"] += 0.4
+                nxt = nxt.next_node
             else:
                 # have insert return if it needs to be from earlier than the pointer
                 sortAll = self.insert(temp, position)
                 self = self.mergeSort(self.middle())
 
 
+    # find why self.__length is not updating, why are only two things being added if sort is called
+    # Add negative correcting to item
     def insert(self, item, position):
         track = 0
         inserted = False
@@ -224,7 +251,8 @@ class PriorityQueue(object):
                 self.__push_back(item)
                 return False
         else:
-            for element in self:
+            element = self.front
+            while element != self.back:
                 if track == position:
                     noderino = element.next_node
                     sortAll = (element.value["priority"] < (noderino.value["priority"] + 0.4))
@@ -234,12 +262,14 @@ class PriorityQueue(object):
                     self.__length += 1
                     break
                 track += 1
+                element = element.next_node
         while noderino != None:
             noderino.value["priority"] += 0.4
             if noderino.value["priority"] > 5:
                 noderino.value["priority"] = 5
             noderino = noderino.next_node
         return sortAll
+
 
     # Bubble sort at position or all
     def mergeSort(self, noderino):
@@ -254,6 +284,7 @@ class PriorityQueue(object):
         right_side = mergeSort(mid_next)
 
         return mergeBack(left, right)
+
 
     def mergeBack(self, left, right):
         sortedList = None
@@ -310,23 +341,33 @@ class BasicTests(unittest.TestCase):
 
     def test_length(self):
         priority_queue = PriorityQueue()
-        priority = 1
-        top = 11
-        for task_id in range(1, top):
-             priority_queue.enqueue(priority, task_id)
-             priority += .5
-        self.assertEqual(len(priority_queue), top-1)
-
-    def test_enqueue_sort_simple(self):
-        priority_queue = PriorityQueue()
         priority = 5
         top = 11
         for task_id in range(1, top):
-             priority_queue.enqueue(priority, task_id)
-             priority -= .5
+            priority_queue.enqueue(priority, task_id)
+            priority -= .5
+        print(priority_queue.names())
         self.assertEqual(len(priority_queue), top-1)
-        print(priority_queue)
-        pass
+
+    def test_enqueue_same_priority_simple(self):
+        priority_queue = PriorityQueue()
+        priority = 5
+        top = 5
+        for task_id in range(1, top):
+            priority_queue.enqueue(priority, task_id)
+        self.assertEqual(len(priority_queue), top-1)
+        self.assertEqual(priority_queue.names(), [1, 2, 3, 4])
+
+    def test_enqueue_increasing_priority(self):
+        priority_queue = PriorityQueue()
+        priority = 1
+        top = 11
+        for task_id in range(1, top):
+            priority_queue.enqueue(priority, task_id)
+            priority += .5
+        self.assertEqual(len(priority_queue), top-1)
+        self.assertEqual(priority_queue.names(), [9, 10, 8, 7, 6, 5, 4, 3, 2, 1])
+        print(priority_queue.names())
 
     def test_init(self):
         priority_queue = PriorityQueue(("one", 2, 3.141592))
@@ -382,6 +423,7 @@ class TestDelete(unittest.TestCase):
         for value in values:
             priority_queue.delete(value)
         self.assertTrue(priority_queue.empty())
+
 
 class TestMiddle(unittest.TestCase):
     def test_empty(self):
