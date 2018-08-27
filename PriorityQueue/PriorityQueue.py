@@ -16,7 +16,7 @@ class PriorityQueue(object):
         self.__length = 0
         if initial != None:
             for element in tuple(initial):
-                self.__push_front(element)
+                self.__push_back(element)
 
     def empty(self):
         return self.front == self.back == None
@@ -35,7 +35,7 @@ class PriorityQueue(object):
             return tmp
         else:
             raise StopIteration()
-
+    '''
     def __str__(self):
         if self.empty():
             return str(None)
@@ -51,14 +51,27 @@ class PriorityQueue(object):
                 tmp2 = tmp2.next_node
             tmp = tmp2
         return (output + str(tmp.value))
+    '''
 
+    def __str__(self):
+        if self.empty():
+            return str(None)
+        if self.front == self.back:
+            return str(self.front.value)
+        vals = ''
+        for item in self:
+            if item == self.back.value:
+                vals += str(item)
+                break
+            vals += str(item) + ', '
+        return vals
 
     def __repr__(self):
         return 'PriorityQueue((' + str(self) + '))'
 
 
     def __push_front(self, value):
-        new = self.Node(value, self.front)
+        new = self.Node(value, None)
         if self.empty():
             self.front = self.back = new
             self.__length += 1
@@ -185,6 +198,19 @@ class PriorityQueue(object):
         return slow
 
 
+    def middle_from_node(self, start):
+        if start == None:
+            return start
+        fast = start.next_node.next_node
+        slow = start
+        while fast is not None:
+            fast = fast.next_node
+            if fast is not None:
+                fast = fast.next_node
+            slow = slow.next_node
+        return slow
+
+    '''
     def search(self, value=None):
         if self.empty():
             raise RuntimeError("PriorityQueue is empty")
@@ -198,7 +224,7 @@ class PriorityQueue(object):
         if updated:
             return pos
         return 0
-
+    '''
 
     def names(self):
         name_list = list()
@@ -209,30 +235,46 @@ class PriorityQueue(object):
 
     def enqueue(self, priority, name, time=0):
         if priority > 5:
-             priority = 5.0
+            priority = 5.0
+        elif priority < 0:
+            priority = 0.0
         item = {"priority": priority,
                 "name": name,
                 "time": time}
+        needsSort = False
         if self.empty() or (item["priority"] <= self.back.value["priority"]):
             self.__push_back(item)
+        elif self.front.value["priority"] < item["priority"]:
+            self.__push_front(item)
+            nxt = self.front.next_node
+            while nxt != None:
+                nxt.value["priority"] += 0.4
+                if nxt.value["priority"] > 5:
+                    nxt.value["priority"] = 5
+                nxt = nxt.next_node
+            needsSort = True 
         else:
             #position = self.search(temp["priority"])
             inserted = False
             nxt = self.front
             while nxt != self.back:
-                if nxt.next_node.value["priority"] < item["priority"]:
+                if (inserted == False) and (nxt.next_node.value["priority"] < item["priority"]):
                     temp = nxt.next_node
                     nxt.next_node = self.Node(item, temp)
                     inserted = True
                     nxt = nxt.next_node
+                    self.__length += 1
                     continue
                 if inserted == True:
                     nxt.value["priority"] += 0.4
+                    if nxt.value["priority"] > 5:
+                         nxt.value["priority"] = 5
                 nxt = nxt.next_node
-            else:
-                # have insert return if it needs to be from earlier than the pointer
-                sortAll = self.insert(temp, position)
-                self = self.mergeSort(self.middle())
+            needsSort = True
+        if needsSort == True:
+            # have insert return if it needs to be from earlier than the pointer
+            #sortAll = self.insert(temp, position)
+            self.front = self.mergeSort(self.front)
 
 
     # find why self.__length is not updating, why are only two things being added if sort is called
@@ -275,15 +317,13 @@ class PriorityQueue(object):
     def mergeSort(self, noderino):
         if (noderino == None) or (noderino.next_node == None):
             return noderino
-
-        mid = self.middle()
+        mid = self.middle_from_node(noderino)
         mid_next = mid.next_node
         mid.next_node = None
 
-        left_side = mergeSort(noderino)
-        right_side = mergeSort(mid_next)
-
-        return mergeBack(left, right)
+        left_side = self.mergeSort(noderino)
+        right_side = self.mergeSort(mid_next)
+        return self.mergeBack(left_side, right_side)
 
 
     def mergeBack(self, left, right):
@@ -294,22 +334,15 @@ class PriorityQueue(object):
             return left
         if left.value["priority"] >= right.value["priority"]:
             sortedList = left
-            sortedList.next_node = mergeBack(left.next_node, right)
+            sortedList.next_node = self.mergeBack(left.next_node, right)
         else:
             sortedList = right
-            sortedList.next_node = mergeBack(left, right.next_node)
-        return result
+            sortedList.next_node = self.mergeBack(left, right.next_node)
+        return sortedList
 
 
     def dequeue(self):
-        if self.empty():
-            raise RuntimeError("PriorityQueue is empty")
-        if self.front == self.back:
-            temp = self.front.value
-            self.front = self.back = None
-            return temp
-        else:
-            return self.__pop_front()
+        return self.__pop_front()
 
 
 
@@ -332,12 +365,14 @@ class BasicTests(unittest.TestCase):
     def test_empty(self):
         self.assertTrue(PriorityQueue().empty())
 
+
     def test_enqueue_simple(self):
         priority_queue = PriorityQueue()
         priority = 5
         name = "test"
         priority_queue.enqueue(priority, name)
         self.assertFalse(priority_queue.empty())
+
 
     def test_length(self):
         priority_queue = PriorityQueue()
@@ -346,8 +381,8 @@ class BasicTests(unittest.TestCase):
         for task_id in range(1, top):
             priority_queue.enqueue(priority, task_id)
             priority -= .5
-        print(priority_queue.names())
         self.assertEqual(len(priority_queue), top-1)
+
 
     def test_enqueue_same_priority_simple(self):
         priority_queue = PriorityQueue()
@@ -358,6 +393,7 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(len(priority_queue), top-1)
         self.assertEqual(priority_queue.names(), [1, 2, 3, 4])
 
+
     def test_enqueue_increasing_priority(self):
         priority_queue = PriorityQueue()
         priority = 1
@@ -367,17 +403,19 @@ class BasicTests(unittest.TestCase):
             priority += .5
         self.assertEqual(len(priority_queue), top-1)
         self.assertEqual(priority_queue.names(), [9, 10, 8, 7, 6, 5, 4, 3, 2, 1])
-        print(priority_queue.names())
+
 
     def test_init(self):
         priority_queue = PriorityQueue(("one", 2, 3.141592))
-        self.assertEqual(priority_queue.dequeue(), 3.141592)
-        self.assertEqual(priority_queue.dequeue(), 2)
         self.assertEqual(priority_queue.dequeue(), "one")
+        self.assertEqual(priority_queue.dequeue(), 2)
+        self.assertEqual(priority_queue.dequeue(), 3.141592)
+
 
     def test_str(self):
         priority_queue = PriorityQueue((1, 2, 3))
         self.assertEqual(priority_queue.__str__(), '1, 2, 3')
+
 
     def test_repr(self):
         priority_queue = PriorityQueue((1, 2, 3))
@@ -435,7 +473,7 @@ class TestMiddle(unittest.TestCase):
 
     def test_find_middle_value_of_two(self):
         priority_queue = PriorityQueue((1, 2))
-        self.assertEqual(priority_queue.middle_value(), 1)
+        self.assertEqual(priority_queue.middle_value(), 2)
 
     def test_find_middle_value_of_three(self):
         priority_queue = PriorityQueue((1, 2, 3))
@@ -443,7 +481,7 @@ class TestMiddle(unittest.TestCase):
 
     def test_find_middle_value_of_four(self):
         priority_queue = PriorityQueue((1, 2, 3, 4))
-        self.assertEqual(priority_queue.middle_value(), 2)
+        self.assertEqual(priority_queue.middle_value(), 3)
 
     def test_find_middle_value_of_five(self):
         priority_queue = PriorityQueue((1, 2, 3, 4, 5))
@@ -451,12 +489,50 @@ class TestMiddle(unittest.TestCase):
 
     def test_find_middle_value_of_20(self):
         priority_queue = PriorityQueue(tuple(range(1, 21))) 
-        self.assertEqual(priority_queue.middle_value(), 10)
+        self.assertEqual(priority_queue.middle_value(), 11)
 
     def test_find_middle_value_of_103(self):
         priority_queue = PriorityQueue(tuple(range(1, 104)))
         self.assertEqual(priority_queue.middle_value(), 52)
 
 
+#if '__main__' == __name__:
+#    unittest.main()
+
+file_name = "test_data.dat"
+priority_queue = PriorityQueue()
+
 if '__main__' == __name__:
-    unittest.main()
+    def print_queue(priority_queue):
+        num = 1
+        for item in priority_queue:
+            print(f"{num} : {item}")
+            num += 1
+
+    input_type = input("Input from a file or from user input? ('file' or 'user')")
+
+    while input_type not in ('file' or 'user'):
+        print(f"'{input_type}' is not a valid option")
+        input_type = input("Input from a file or from user input? ('file' or 'user')")
+
+    if (input_type.lower() == "file"):
+        file_name = "test_data.dat"
+        priority_queue = PriorityQueue()
+        with open(file_name) as inputFile:
+            for line in inputFile:
+                temp = line.split(" ")
+                priority_queue.enqueue(int(temp[0]), temp[1].strip('/n'))
+        if inputFile.closed == False:
+            raise RuntimeError("Input file did not close correctly")
+        print_queue(priority_queue)
+    else:
+        done = False
+        priority_queue = PriorityQueue()
+        while(exit_code != True):
+            name = input("Student name?")
+            priority = input("Task priority?")
+            priority_queue.enqueue(name, priority)
+            exit = input("Another student? (yes or no)")
+            if exit.lower() == 'no':
+                done = True
+        print_queue(priority_queue)
