@@ -248,7 +248,7 @@ class PriorityQueue(object):
             self.__push_front(item)
             nxt = self.front.next_node
             while nxt != None:
-                nxt.value["priority"] += 0.4
+                nxt.value["priority"] = round((nxt.value["priority"] + 0.4), 1)
                 if nxt.value["priority"] > 5:
                     nxt.value["priority"] = 5
                 nxt = nxt.next_node
@@ -266,7 +266,7 @@ class PriorityQueue(object):
                     self.__length += 1
                     continue
                 if inserted == True:
-                    nxt.value["priority"] += 0.4
+                    nxt.value["priority"] = round((nxt.value["priority"] + 0.4), 1)
                     if nxt.value["priority"] > 5:
                          nxt.value["priority"] = 5
                 nxt = nxt.next_node
@@ -511,7 +511,7 @@ if '__main__' == __name__:
 
     input_type = input("Input from a file or from user input? ('file' or 'user')")
 
-    while input_type not in ('file' or 'user'):
+    while input_type.lower() not in ('user', 'file'):
         print(f"'{input_type}' is not a valid option")
         input_type = input("Input from a file or from user input? ('file' or 'user')")
 
@@ -521,17 +521,17 @@ if '__main__' == __name__:
         with open(file_name) as inputFile:
             for line in inputFile:
                 temp = line.split(" ")
-                priority_queue.enqueue(int(temp[0]), temp[1].strip('/n'))
+                priority_queue.enqueue(int(temp[0]), temp[1].rstrip())
         if inputFile.closed == False:
             raise RuntimeError("Input file did not close correctly")
         print_queue(priority_queue)
     else:
         done = False
         priority_queue = PriorityQueue()
-        while(exit_code != True):
+        while(done != True):
             name = input("Student name?")
             priority = input("Task priority?")
-            priority_queue.enqueue(name, priority)
+            priority_queue.enqueue(int(priority), name)
             exit = input("Another student? (yes or no)")
             if exit.lower() == 'no':
                 done = True
