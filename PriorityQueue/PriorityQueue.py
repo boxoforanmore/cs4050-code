@@ -16,7 +16,7 @@ class PriorityQueue(object):
         self.__length = 0
         if initial != None:
             for element in tuple(initial):
-                self.__push_back(element)
+                self.enqueue(element[0], element[1])
 
     def empty(self):
         return self.front == self.back == None
@@ -133,23 +133,23 @@ class PriorityQueue(object):
             raise RuntimeError("PriorityQueue's delete method must be called with a value")
         if self.empty():
             raise RuntimeError("PriorityQueue is empty")
-        if self.front.value == value:
+        if self.front.value["name"] == value:
             self.__pop_front()
             return
-        if self.back.value == value:
+        if self.back.value["name"] == value:
             self.__pop_back()
             return
         else:
             prev = self.front
             current = self.front.next_node
             nxt = self.front.next_node.next_node
-            if current.value is value:
+            if current.value["name"] == value:
                 prev.next_node = nxt 
                 current.next_node = None
                 current = None
                 return
             while current is not self.back:
-                if current.value is value:
+                if current.value["name"] == value:
                     prev.next_node = nxt
                     current.next_node = None
                     current = None
@@ -180,25 +180,11 @@ class PriorityQueue(object):
         return slow.value
 
 
-    def middle(self):
+    def middle_from_node(self, start=None):
         if self.empty():
             raise RuntimeError("PriorityQueue is empty")
         if self.front == self.back:
-            return self.front
-        if self.front.next_node == self.back:
-            return self.back
-        fast = self.front.next_node.next_node
-        slow = self.front.next_node
-        while fast is not self.back:
-            if fast.next_node.next_node is None:
-                fast = fast.next_node
-            else:
-                fast.next_node.next_node
-            slow = slow.next_node
-        return slow
-
-
-    def middle_from_node(self, start):
+            return start
         if start == None:
             return start
         fast = start.next_node.next_node
@@ -257,7 +243,7 @@ class PriorityQueue(object):
             #position = self.search(temp["priority"])
             inserted = False
             nxt = self.front
-            while nxt != self.back:
+            while nxt != self.back.next_node:
                 if (inserted == False) and (nxt.next_node.value["priority"] < item["priority"]):
                     temp = nxt.next_node
                     nxt.next_node = self.Node(item, temp)
@@ -265,7 +251,7 @@ class PriorityQueue(object):
                     nxt = nxt.next_node
                     self.__length += 1
                     continue
-                if inserted == True:
+                if inserted == True and nxt.value != item:
                     nxt.value["priority"] = round((nxt.value["priority"] + 0.4), 1)
                     if nxt.value["priority"] > 5:
                          nxt.value["priority"] = 5
@@ -275,42 +261,6 @@ class PriorityQueue(object):
             # have insert return if it needs to be from earlier than the pointer
             #sortAll = self.insert(temp, position)
             self.front = self.mergeSort(self.front)
-
-
-    # find why self.__length is not updating, why are only two things being added if sort is called
-    # Add negative correcting to item
-    def insert(self, item, position):
-        track = 0
-        inserted = False
-        # Case for only 1?
-        sortAll = True
-        noderino = self.front.next_node
-        if len(self) == 1:
-            if position == 0:
-                self.__push_front(item)
-                inserted = True
-            elif position == 1:
-                self.__push_back(item)
-                return False
-        else:
-            element = self.front
-            while element != self.back:
-                if track == position:
-                    noderino = element.next_node
-                    sortAll = (element.value["priority"] < (noderino.value["priority"] + 0.4))
-                    new = self.Node(item, noderino)
-                    element.next_node = new
-                    inserted = True
-                    self.__length += 1
-                    break
-                track += 1
-                element = element.next_node
-        while noderino != None:
-            noderino.value["priority"] += 0.4
-            if noderino.value["priority"] > 5:
-                noderino.value["priority"] = 5
-            noderino = noderino.next_node
-        return sortAll
 
 
     # Bubble sort at position or all
@@ -345,26 +295,12 @@ class PriorityQueue(object):
         return self.__pop_front()
 
 
-
-class PriorityQueue2(list):
-    def enqueue(self, value):
-        list.insert(self, 0, value)
-
-    def dequeue(self):
-        pass
-        #temp =
-    # use a dictionary for adding to the queue 
-
-    def __sort__(self):
-        pass 
-
-
-'''Unit Tests'''
+''''''''''''''''''''
+'''''Unit Tests'''''
 
 class BasicTests(unittest.TestCase):
     def test_empty(self):
         self.assertTrue(PriorityQueue().empty())
-
 
     def test_enqueue_simple(self):
         priority_queue = PriorityQueue()
@@ -372,7 +308,6 @@ class BasicTests(unittest.TestCase):
         name = "test"
         priority_queue.enqueue(priority, name)
         self.assertFalse(priority_queue.empty())
-
 
     def test_length(self):
         priority_queue = PriorityQueue()
@@ -383,7 +318,6 @@ class BasicTests(unittest.TestCase):
             priority -= .5
         self.assertEqual(len(priority_queue), top-1)
 
-
     def test_enqueue_same_priority_simple(self):
         priority_queue = PriorityQueue()
         priority = 5
@@ -392,7 +326,6 @@ class BasicTests(unittest.TestCase):
             priority_queue.enqueue(priority, task_id)
         self.assertEqual(len(priority_queue), top-1)
         self.assertEqual(priority_queue.names(), [1, 2, 3, 4])
-
 
     def test_enqueue_increasing_priority(self):
         priority_queue = PriorityQueue()
@@ -404,22 +337,35 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(len(priority_queue), top-1)
         self.assertEqual(priority_queue.names(), [9, 10, 8, 7, 6, 5, 4, 3, 2, 1])
 
-
     def test_init(self):
-        priority_queue = PriorityQueue(("one", 2, 3.141592))
-        self.assertEqual(priority_queue.dequeue(), "one")
-        self.assertEqual(priority_queue.dequeue(), 2)
-        self.assertEqual(priority_queue.dequeue(), 3.141592)
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(len(priority_queue), len(students))
 
+    def test_deqeue_empty(self):
+        self.assertRaises(RuntimeError, lambda: PriorityQueue().dequeue())
+
+    def test_dequeue(self):
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.dequeue()["name"], "Bill")
+        self.assertEqual(priority_queue.dequeue()["name"], "John")
+        self.assertEqual(priority_queue.dequeue()["name"], "Janet")
+        self.assertEqual(priority_queue.dequeue()["name"], "Joe")
+        self.assertTrue(priority_queue.empty())
 
     def test_str(self):
-        priority_queue = PriorityQueue((1, 2, 3))
-        self.assertEqual(priority_queue.__str__(), '1, 2, 3')
-
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.__str__(), "{'priority': 5, 'name': 'Bill', 'time': 0}, " \
+                                                   "{'priority': 4.4, 'name': 'John', 'time': 0}, {'priority': 2, 'name': 'Joe', 'time': 0}")
 
     def test_repr(self):
-        priority_queue = PriorityQueue((1, 2, 3))
-        self.assertEqual(priority_queue.__repr__(), 'PriorityQueue((1, 2, 3))')
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.__repr__(), "PriorityQueue(({'priority': 5, 'name': 'Bill', 'time': 0}, " \
+                                                    "{'priority': 4.4, 'name': 'John', 'time': 0}, {'priority': 2, 'name': 'Joe', 'time': 0}))")
+
 
 
 class TestDelete(unittest.TestCase):
@@ -430,77 +376,77 @@ class TestDelete(unittest.TestCase):
         self.assertRaises(RuntimeError, lambda: PriorityQueue().delete())
 
     def test_delete_first_item(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5, 6)) 
-        priority_queue.delete(1)
-        self.assertEqual(priority_queue.__str__(), '2, 3, 4, 5, 6')
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        priority_queue.delete("Bill")
+        self.assertEqual(priority_queue.__str__(), "{'priority': 4.4, 'name': 'John', 'time': 0}, " \
+                                                   "{'priority': 2, 'name': 'Joe', 'time': 0}")
 
     def test_delete_last_item(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5, 6)) 
-        priority_queue.delete(6)
-        self.assertEqual(priority_queue.__str__(), '1, 2, 3, 4, 5')
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        priority_queue.delete("Joe")
+        self.assertEqual(priority_queue.__str__(), "{'priority': 5, 'name': 'Bill', 'time': 0}, " \
+                                                   "{'priority': 4.4, 'name': 'John', 'time': 0}")
 
-    def test_delete_middle_value_item(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5, 6, 7)) 
-        priority_queue.delete(4)
-        self.assertEqual(priority_queue.__str__(), '1, 2, 3, 5, 6, 7')
+    def test_delete_middle_item(self):
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        priority_queue.delete("John")
+        self.assertEqual(priority_queue.__str__(), "{'priority': 5, 'name': 'Bill', 'time': 0}, " \
+                                                   "{'priority': 2, 'name': 'Joe', 'time': 0}")
 
     def test_first_edge(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5, 6))
-        priority_queue.delete(2)
-        self.assertEqual(priority_queue.__str__(), '1, 3, 4, 5, 6')
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        priority_queue.delete("John")
+        self.assertEqual(priority_queue.__str__(), "{'priority': 5, 'name': 'Bill', 'time': 0}, "  \
+                                                   "{'priority': 3, 'name': 'Janet', 'time': 0}, {'priority': 2.4, 'name': 'Joe', 'time': 0}")
 
     def test_last_edge(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5, 6))
-        priority_queue.delete(5)
-        self.assertEqual(priority_queue.__str__(), '1, 2, 3, 4, 6')
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        priority_queue.delete("Janet")
+        self.assertEqual(priority_queue.__str__(), "{'priority': 5, 'name': 'Bill', 'time': 0}, " \
+                                                   "{'priority': 4.4, 'name': 'John', 'time': 0}, {'priority': 2.4, 'name': 'Joe', 'time': 0}")
 
     def test_delete_all(self):
-        values = (1, 2, 3, 4, 5, 6)
-        priority_queue = PriorityQueue(values)
-        self.assertFalse(priority_queue.empty())
-        for value in values:
-            priority_queue.delete(value)
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        for student in students:
+            priority_queue.delete(student[1])
         self.assertTrue(priority_queue.empty())
 
 
-class TestMiddle(unittest.TestCase):
+class TestMiddleFromNode(unittest.TestCase):
     def test_empty(self):
-        self.assertRaises(RuntimeError, lambda: PriorityQueue().middle_value())
+        self.assertRaises(RuntimeError, lambda: PriorityQueue().middle_from_node())
 
-    def test_find_middle_value_single(self):
-        priority_queue = PriorityQueue((3,))
-        self.assertEqual(priority_queue.middle_value(), 3)
+    def test_find_middle_single(self):
+        students = [[4, "John"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "John")
 
     def test_find_middle_value_of_two(self):
-        priority_queue = PriorityQueue((1, 2))
-        self.assertEqual(priority_queue.middle_value(), 2)
+        students = [[4, "John"], [5,  "Bill"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "Bill")
 
     def test_find_middle_value_of_three(self):
-        priority_queue = PriorityQueue((1, 2, 3))
-        self.assertEqual(priority_queue.middle_value(), 2)
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "John")
 
     def test_find_middle_value_of_four(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4))
-        self.assertEqual(priority_queue.middle_value(), 3)
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "John")
 
     def test_find_middle_value_of_five(self):
-        priority_queue = PriorityQueue((1, 2, 3, 4, 5))
-        self.assertEqual(priority_queue.middle_value(), 3)
+        students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"], [2, "Jimothy"]]
+        priority_queue = PriorityQueue(students)
+        self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "Janet")
 
-    def test_find_middle_value_of_20(self):
-        priority_queue = PriorityQueue(tuple(range(1, 21))) 
-        self.assertEqual(priority_queue.middle_value(), 11)
-
-    def test_find_middle_value_of_103(self):
-        priority_queue = PriorityQueue(tuple(range(1, 104)))
-        self.assertEqual(priority_queue.middle_value(), 52)
-
-
-#if '__main__' == __name__:
-#    unittest.main()
-
-file_name = "test_data.dat"
-priority_queue = PriorityQueue()
 
 if '__main__' == __name__:
     def print_queue(priority_queue):
@@ -509,14 +455,7 @@ if '__main__' == __name__:
             print(f"{num} : {item}")
             num += 1
 
-    input_type = input("Input from a file or from user input? ('file' or 'user')")
-
-    while input_type.lower() not in ('user', 'file'):
-        print(f"'{input_type}' is not a valid option")
-        input_type = input("Input from a file or from user input? ('file' or 'user')")
-
-    if (input_type.lower() == "file"):
-        file_name = "test_data.dat"
+    def file_read(file_name):
         priority_queue = PriorityQueue()
         with open(file_name) as inputFile:
             for line in inputFile:
@@ -525,6 +464,20 @@ if '__main__' == __name__:
         if inputFile.closed == False:
             raise RuntimeError("Input file did not close correctly")
         print_queue(priority_queue)
+
+    input_type = input("Input from a file or from user input? ('file' or 'user')")
+
+    while input_type.lower() not in ('user', 'file'):
+        print(f"'{input_type}' is not a valid option")
+        input_type = input("Input from a file or from user input? ('file' or 'user')")
+    if input_type.lower() == 'file':
+        print("Test Cases with Detailed Event Logs")
+        print("\n\n---------------------------------------------\n\n", "test_data1.dat")
+        file_read("test_data1.dat")
+        print("\n\n---------------------------------------------\n\n", "test_data2.dat")
+        file_read("test_data2.dat")
+        print("\n\n---------------------------------------------\n\n", "test_data3.dat")
+        file_read("test_data3.dat")
     else:
         done = False
         priority_queue = PriorityQueue()
