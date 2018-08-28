@@ -182,6 +182,8 @@ class PriorityQueue(object):
         item = {"priority": priority,
                 "name": name,
                 "time": time}
+
+        print(f"Queueing item: {item}")
         needsSort = False
         if self.empty() or (item["priority"] <= self.back.value["priority"]):
             self.__push_back(item)
@@ -243,7 +245,9 @@ class PriorityQueue(object):
 
 
     def dequeue(self):
-        return self.__pop_front()
+        item = self.__pop_front()
+        print(f"Dequeueing item: {item}")
+        return item
 
 
 
@@ -324,7 +328,6 @@ class BasicTests(unittest.TestCase):
         priority_queue = PriorityQueue(students)
         self.assertEqual(priority_queue.__repr__(), "PriorityQueue(({'priority': 5, 'name': 'Bill', 'time': 0}, " \
                                                     "{'priority': 4.4, 'name': 'John', 'time': 0}, {'priority': 2, 'name': 'Joe', 'time': 0}))")
-
 
 
 class TestDelete(unittest.TestCase):
@@ -417,41 +420,70 @@ class TestMiddleFromNode(unittest.TestCase):
 if '__main__' == __name__:
     def print_queue(priority_queue):
         num = 1
+        print("List of Students")
+        print("----------------")
         for item in priority_queue:
             print(f"{num} : {item}")
             num += 1
+        print("\n\n")
 
-    def file_read(file_name):
+    def file_read(file_name, mode=""):
         priority_queue = PriorityQueue()
+        print_queue(priority_queue)
         with open(file_name) as inputFile:
             for line in inputFile:
                 temp = line.split(" ")
                 priority_queue.enqueue(int(temp[0]), temp[1].rstrip())
+                print()
+                print_queue(priority_queue)
         if inputFile.closed == False:
             raise RuntimeError("Input file did not close correctly")
+        if mode == "dequeue":
+            for i in range(0, 3):
+                priority_queue.dequeue()
+                print()
+                print_queue(priority_queue)
+        print("Final:")
         print_queue(priority_queue)
 
     input_type = input("Input from a file or from user input? ('file' or 'user')")
 
     while input_type.lower() not in ('user', 'file'):
         print(f"'{input_type}' is not a valid option")
-        input_type = input("Input from a file or from user input? ('file' or 'user')")
+        input_type = input("Input from a file or from user input? ('file' or 'user')  ")
     if input_type.lower() == 'file':
+        print("\n-----------------------------------")
         print("Test Cases with Detailed Event Logs")
-        print("\n\n---------------------------------------------\n\n", "test_data1.dat")
+        print("-----------------------------------")
+        print("\n\n---------------------------------------------\n")
+        print("File: test_data1.dat\n")
         file_read("test_data1.dat")
-        print("\n\n---------------------------------------------\n\n", "test_data2.dat")
+        print("\n\n---------------------------------------------\n")
+        print("File: test_data2.dat\n")
         file_read("test_data2.dat")
-        print("\n\n---------------------------------------------\n\n", "test_data3.dat")
+        print("\n\n---------------------------------------------\n")
+        print("File: test_data3.dat\n")
         file_read("test_data3.dat")
+        print("\n\n---------------------------------------------\n")
+        print("File: test_data3.dat w/ dequeue\n")
+        file_read("test_data3.dat", "dequeue")
     else:
         done = False
         priority_queue = PriorityQueue()
+        print()
         while(done != True):
-            name = input("Student name?")
-            priority = input("Task priority?")
+            name = input("Student name? ")
+            priority = input("Task priority? ")
             priority_queue.enqueue(int(priority), name)
-            exit = input("Another student? (yes or no)")
-            if exit.lower() == 'no':
+            print()
+            print_queue(priority_queue)
+            dequeue = input("Dequeue a student? (yes or no)")
+            if dequeue.lower() in ('yes'):
+                priority_queue.dequeue()
+                print()
+                print_queue(priority_queue)
+            exit = input("Add another student? (yes or no)")
+            if exit.lower() in ('no'):
                 done = True
+        print("Final:")
         print_queue(priority_queue)
