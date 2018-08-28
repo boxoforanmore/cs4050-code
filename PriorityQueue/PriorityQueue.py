@@ -3,13 +3,10 @@ import unittest
 
 class PriorityQueue(object):
     class Node(object):
-        # pylint: disable=too-few-public-methods
-        ''' no need for get or set, we only access the values inside the
-            PriorityQueue class. and really: never have setters. '''
-
         def __init__(self, value, next_node):
             self.value = value
             self.next_node = next_node
+
 
     def __init__(self, initial=None):
         self.front = self.back = self.current = None
@@ -18,15 +15,19 @@ class PriorityQueue(object):
             for element in tuple(initial):
                 self.enqueue(element[0], element[1])
 
+
     def empty(self):
         return self.front == self.back == None
+
 
     def __len__(self):
         return self.__length
 
+
     def __iter__(self):
         self.current = self.front
         return self
+
 
     def __next__(self):
         if self.current:
@@ -35,23 +36,7 @@ class PriorityQueue(object):
             return tmp
         else:
             raise StopIteration()
-    '''
-    def __str__(self):
-        if self.empty():
-            return str(None)
-        if self.front == self.back:
-            return str(self.front.value)
-        output = ''
-        tmp = self.back
-        tmp2 = None
-        while tmp is not self.front:
-            tmp2 = self.front
-            output += str(tmp.value) + ', '
-            while tmp2.next_node is not tmp:
-                tmp2 = tmp2.next_node
-            tmp = tmp2
-        return (output + str(tmp.value))
-    '''
+
 
     def __str__(self):
         if self.empty():
@@ -65,6 +50,7 @@ class PriorityQueue(object):
                 break
             vals += str(item) + ', '
         return vals
+
 
     def __repr__(self):
         return 'PriorityQueue((' + str(self) + '))'
@@ -108,6 +94,7 @@ class PriorityQueue(object):
         self.back.next_node = new
         self.back = new
         self.__length += 1
+
 
     def __pop_back(self):
         if self.empty():
@@ -162,23 +149,6 @@ class PriorityQueue(object):
         raise RuntimeError("Delete method is not working correctly")
 
 
-    def middle_value(self):
-        if self.empty():
-            raise RuntimeError("PriorityQueue is empty")
-        if self.front == self.back:
-            return self.front.value
-        if self.front.next_node == self.back:
-            return self.back.value
-        fast = self.front.next_node.next_node
-        slow = self.front.next_node
-        while fast is not self.back:
-            if fast.next_node.next_node is None:
-                fast = fast.next_node
-            else:
-                fast = fast.next_node.next_node
-            slow = slow.next_node
-        return slow.value
-
 
     def middle_from_node(self, start=None):
         if self.empty():
@@ -196,21 +166,6 @@ class PriorityQueue(object):
             slow = slow.next_node
         return slow
 
-    '''
-    def search(self, value=None):
-        if self.empty():
-            raise RuntimeError("PriorityQueue is empty")
-        pos = 1
-        updated = False
-        for item in self:
-            if value < item["priority"]:
-                return pos
-            pos += 1
-            updated = True
-        if updated:
-            return pos
-        return 0
-    '''
 
     def names(self):
         name_list = list()
@@ -221,7 +176,7 @@ class PriorityQueue(object):
 
     def enqueue(self, priority, name, time=0):
         if priority > 5:
-            priority = 5.0
+            priority = 5
         elif priority < 0:
             priority = 0.0
         item = {"priority": priority,
@@ -240,7 +195,6 @@ class PriorityQueue(object):
                 nxt = nxt.next_node
             needsSort = True 
         else:
-            #position = self.search(temp["priority"])
             inserted = False
             nxt = self.front
             while nxt != self.back.next_node:
@@ -254,16 +208,13 @@ class PriorityQueue(object):
                 if inserted == True and nxt.value != item:
                     nxt.value["priority"] = round((nxt.value["priority"] + 0.4), 1)
                     if nxt.value["priority"] > 5:
-                         nxt.value["priority"] = 5
+                         nxt.value["priority"] = int(5)
                 nxt = nxt.next_node
             needsSort = True
         if needsSort == True:
-            # have insert return if it needs to be from earlier than the pointer
-            #sortAll = self.insert(temp, position)
             self.front = self.mergeSort(self.front)
 
 
-    # Bubble sort at position or all
     def mergeSort(self, noderino):
         if (noderino == None) or (noderino.next_node == None):
             return noderino
@@ -295,8 +246,16 @@ class PriorityQueue(object):
         return self.__pop_front()
 
 
+
+
+''''''''''''''''''''
 ''''''''''''''''''''
 '''''Unit Tests'''''
+''''''''''''''''''''
+''''''''''''''''''''
+# Run unittests with:
+##  OSX:      'python3 -m unittest PriorityQueue.py'
+##  Windows:  'python  -m unittest PriorityQueue.py'
 
 class BasicTests(unittest.TestCase):
     def test_empty(self):
@@ -446,6 +405,13 @@ class TestMiddleFromNode(unittest.TestCase):
         students = [[4, "John"], [5,  "Bill"], [2, "Joe"], [3, "Janet"], [2, "Jimothy"]]
         priority_queue = PriorityQueue(students)
         self.assertEqual(priority_queue.middle_from_node(priority_queue.front).value["name"], "Janet")
+
+
+
+
+'''''''''''''''''''''''''''
+''''Main Runtime Script''''
+'''''''''''''''''''''''''''
 
 
 if '__main__' == __name__:
