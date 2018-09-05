@@ -145,32 +145,61 @@ class Graph(object):
     def __f_warshall(self):
         num_vert = self.countVertices()
         distance = list(self.matrix)
-        for row in distance:
-            for col in row:
+        for index1, row in enumerate(distance):
+            for index2, col in enumerate(row):
                 if col <= 0:
-                    col = float("inf")
+                    distance[index1][index2] = float("inf")
         for index, vertex1 in enumerate(self.vertices):
             for vertex2 in self.vertices:
                 if vertex1 is vertex2:
                     distance[index][index] = 0
-        for k in range(1, num_vert):
-            for i in range(1, num_vert):
-                for j in range(1, num_vert):
-                    if distance[i][j] > (distance[i][k] + distance[k][j]:
+        for k in range(0, num_vert):
+            for i in range(0, num_vert):
+                for j in range(0, num_vert):
+                    if distance[i][j] > (distance[i][k] + distance[k][j]):
                         distance[i][j] = distance[i][k] + distance[k][j]
         return distance
 
+    def __flatten(self, matrix):
+        temp = []
+        for row in self.matrix:
+            for col in row:
+                temp.append(col)
+        return temp
+    '''
     # Also floyd warshall?
     def isFullyConnected(self):
-        pass
+        dist = self.__f_warshall()
+        temp = list(self.matrix)
+        for index in range(len(self.matrix)):
+            temp[index][index] = 0
+        dist = self.__flatten(dist)
+        temp = self.__flatten(temp)
+        if dist == temp:
+            return True
+        for index in range(len(dist)):
+            if not temp[index] == dist[index]:
+                return False
+    '''
+
+    def isFullyConnected(self):
+        req_edges = 2 * self.__kEdges(len(self.vertices))
+        for index1, row in enumerate(self.matrix):
+            for index2, col in enumerate(row):
+                if (index2 == index1) or (col <= 0):
+                    continue
+                req_edges -= 1
+        if req_edges == 0:
+            return True
+        return False
 
     def __kEdges(self, k):
         if k == 2:
-            return k
+            return 1
         elif k == 3:
             return k
         else:
-            return self.__edges(k-1) + k - 1
+            return self.__kEdges(k-1) + k - 1
 
     # Read the file--maybe take command line args?
     def readGraph(self):
@@ -424,6 +453,122 @@ class TestBasicFunction(unittest.TestCase):
         graph.addVertex('A')
         self.assertTrue(graph.isSparse())
 
-    def test_connected_false(self):
-        ####
-        pass
+    def test_connected_undirected_false(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        graph.addEdge(vertices[0], vertices[1])
+        graph.addEdge(vertices[2], vertices[3])
+        self.assertFalse(graph.isConnected())
+        
+    def test_connected_directed_false(self):
+        graph = Graph(directed=True)
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        for i in range(len(vertices) - 1):
+            graph.addEdge(vertices[i], vertices[i+1])
+        self.assertFalse(graph.isConnected())
+
+    def test_connected_undirected_true(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        for i in range(len(vertices) - 1):
+            graph.addEdge(vertices[i], vertices[i+1])
+        self.assertTrue(graph.isConnected())
+
+    def test_connected_directed_true(self):
+        graph = Graph(directed=True)
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        graph.addEdge(vertices[len(vertices) - 1], vertices[0])
+        for i in range(len(vertices) - 1):
+            graph.addEdge(vertices[i], vertices[i+1])
+        self.assertTrue(graph.isConnected())
+
+    def test_connected__all_but_one_undirected(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E']
+        for i in vertices:
+            graph.addVertex(i)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                if ('E' in (vertex1, vertex2)) or graph.hasEdge(vertex1, vertex2) or graph.hasEdge(vertex1, vertex2):
+                    continue
+                else:
+                    graph.addEdge(vertex1, vertex2)
+        self.assertFalse(graph.isConnected())
+
+    def test_connected_all_undirected(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E']
+        for i in vertices:
+            graph.addVertex(i)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                if graph.hasEdge(vertex1, vertex2) or graph.hasEdge(vertex1, vertex2):
+                    continue
+                else:
+                    graph.addEdge(vertex1, vertex2)
+        self.assertTrue(graph.isConnected())
+
+    def test_connected_all_directed(self):
+        graph = Graph(directed=True)
+        vertices = ['A', 'B', 'C']
+        for i in vertices:
+            graph.addVertex(i)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                graph.addEdge(vertex1, vertex2)        
+        self.assertTrue(graph.isConnected())
+
+    def test_fully_connected_undirected_false(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        for i in range(len(vertices) - 1):
+            graph.addEdge(vertices[i], vertices[i+1])
+        print(graph)
+        self.assertFalse(graph.isFullyConnected())
+
+    def test_fully_connected_directed_false(self):
+        graph = Graph(directed=True)
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        graph.addEdge(vertices[len(vertices) - 1], vertices[0])
+        for i in range(len(vertices) - 1): 
+            graph.addEdge(vertices[i], vertices[i+1])
+        self.assertFalse(graph.isFullyConnected())
+
+    def test_fully_connected_undireced_true(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D']
+        for i in vertices:
+            graph.addVertex(i)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                if graph.hasEdge(vertex1, vertex2) or graph.hasEdge(vertex1, vertex2):
+                    continue
+                else:
+                    graph.addEdge(vertex1, vertex2)
+        self.assertTrue(graph.isFullyConnected())
+
+    def test_fully_connected_directed_true(self):
+        graph = Graph(directed=True)
+        vertices = ['A', 'B', 'C']
+        for i in vertices:
+            graph.addVertex(i)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                graph.addEdge(vertex1, vertex2)    
+        self.assertTrue(graph.isFullyConnected())
+
+
+
+
