@@ -1,14 +1,16 @@
 from __future__ import print_function
 import unittest
+from sys import argv
+from copy import deepcopy
 
 class Graph(object):
-    def __init__(self, weighted=False, directed=False):
+    def __init__(self, weighted=False, directed=False, filename=""):
         self.matrix = [[]]
         self.vertices = []
         self.weighted = weighted
         self.directed = directed
-        self.edgeAdd = False
-        self.matrixFilled = False
+        if filename != "":
+            self.readGraph(filename)
 
     def empty(self):
         return (len(self.vertices) == 0)
@@ -65,8 +67,6 @@ class Graph(object):
             if vertex2 in vertex:
                 indices[1] = index
             index += 1
-        if -1 in indices:
-            raise RuntimeError("Given vertex pair is invalid/does not exist")
         return indices
 
 
@@ -74,15 +74,17 @@ class Graph(object):
     # Check if directed or undirected (undirected should have mirrored matrix)
     def addEdge(self, vertex1, vertex2, weight=1):
         indices = self.__findIndices(vertex1, vertex2)
-        if -1 in indices or self.hasEdge(vertex1, vertex2):
+        if (-1 in indices):
+            return False
+        if ((self.hasEdge(vertex1, vertex2)) and not self.weighted):
             return False
         if not self.weighted:
             weight = 1
         if self.directed:
-            self.matrix[indices[0]][indices[1]] = weight
+            self.matrix[indices[0]][indices[1]] = float(weight)
         else:
-            self.matrix[indices[0]][indices[1]] = weight
-            self.matrix[indices[1]][indices[0]] = weight
+            self.matrix[indices[0]][indices[1]] = float(weight)
+            self.matrix[indices[1]][indices[0]] = float(weight)
         return True
 
     # directed and undirected
@@ -92,6 +94,8 @@ class Graph(object):
         if (-1 in indices) or (not self.hasEdge(vertex1, vertex2)):
              return False
         self.matrix[indices[0]][indices[1]] = 0
+        if not self.directed:
+            self.matrix[indices[1]][indices[0]] = 0
         return True
 
     def isSparse(self):
@@ -135,16 +139,17 @@ class Graph(object):
 
     # Do floyd warshall
     def isConnected(self):
-        dist = self.__f_warshall()
-        for row in dist:
+        distance = self.__f_warshall()
+        for row in distance:
             for col in row:
                 if col == float("inf"):
+                    del distance
                     return False
         return True
 
     def __f_warshall(self):
         num_vert = self.countVertices()
-        distance = list(self.matrix)
+        distance = deepcopy(self.matrix)
         for index1, row in enumerate(distance):
             for index2, col in enumerate(row):
                 if col <= 0:
@@ -188,7 +193,8 @@ class Graph(object):
             for index2, col in enumerate(row):
                 if (index2 == index1) or (col <= 0):
                     continue
-                req_edges -= 1
+                else:
+                    req_edges -= 1
         if req_edges == 0:
             return True
         return False
@@ -201,14 +207,163 @@ class Graph(object):
         else:
             return self.__kEdges(k-1) + k - 1
 
-    # Read the file--maybe take command line args?
-    def readGraph(self):
-        pass
+    def __findVertices(self, index1, index2):
+        return [self.vertices[index1], self.vertices[index2]]
+
+    def __findEdges(self):
+        edges = []
+        visited = [[False for _ in range(len(self.vertices))] for _ in range(len(self.vertices))]
+        for index1, row in enumerate(self.matrix):
+            for index2, col in enumerate(row):
+                if col > 0:
+                    vertices = self.__findVertices(index1, index2)
+                    if self.weighted and self.directed:
+                        edges.append(str(vertices[0] + " " + vertices[1] + " " + str(col)))
+                    elif (not self.weighted) and self.directed:
+                        edges.append(str(vertices[0] + " " + vertices[1]))
+                    elif self.weighted and (not self.directed):
+                        if (visited[index2][index1] and visited[index1][index2]):
+                            continue
+                        else:
+                            edges.append(str(vertices[0] + " " + vertices[1] + " " + str(col)))
+                            visited[index1][index2], visited[index2][index1] = True, True
+                    elif (not self.weighted) and (not self.directed):
+                        if (visited[index2][index1] and visited[index1][index2]):
+                            continue
+                        else:
+                            edges.append(str(vertices[0] + " " + vertices[1]))
+                            visited[index1][index2], visited[index2][index1] = True, True
+        return edges
 
     # Print out similar output to input
     def printGraph(self):
-        pass
+        vertices = ""
+        edges = self.__findEdges()
+        weighted = "unweighted"
+        directed = "undirected"
+        for vertex in self.vertices:
+            vertices += vertex + " "
+        if self.weighted:
+            weighted = "weighted"
+        if self.directed:
+            directed = "directed"
+        final_print = weighted + "\n" + directed + "\n" + \
+                      "begin\n" + vertices + "\n"
+        for edge in edges:
+            final_print += edge + "\n"
+        final_print += "end\n"
+        print(final_print)
+        return True
 
+    def readGraph(self, filename):
+        begin_token = False
+        end_token = False
+        vertices_token = False
+        actual_result = False
+        error_token = False
+        with open(filename) as inputFile:
+            for line in inputFile:
+                if not begin_token:
+                    if "unweighted" in line:
+                        self.weighted = False
+                    elif "weighted" in line:
+                        self.weighted = True
+                    elif "undirected" in line:
+                        self.directed = False
+                    elif "directed" in line:
+                        self.directed = True
+                    elif "begin" in line:
+                        begin_token = True
+                    else:
+                        print(line.rstrip())
+                        continue
+                    print()
+                    print(line.rstrip())
+                else:
+                    if not vertices_token:
+                        vertices_token = True
+                        print()
+                        print(f"Adding vertices {[line.rstrip()]}from file '{filename}'")
+                        for item in line.rstrip().split():
+                            print(f"Adding vertex '{item}' to graph...")
+                            actual_result = self.addVertex(str(item))
+                            if actual_result:
+                                print(f"{actual_result} : vertex '{item}' added to graph\n")
+                            else:
+                                print(f"{actual_result} : vertex '{item}' not added to graph\n")
+                        print(f"Finished adding vertices from file '{filename}'\n")
+                    elif not end_token:
+                        if "end" in line.rstrip():
+                            print(f"Finished adding edges from file '{filename}'\n")
+                            print(line.rstrip(),"\n\n")
+                            end_token = True
+                        else:
+                            edges = line.rstrip().split()
+                            if not self.weighted:
+                                print(f"Adding edge '{edges[0]}  {edges[1]}' to graph")
+                                actual_result = self.addEdge(edges[0], edges[1])
+                            else:
+                                print(f"Adding edge '{edges[0]} {edges[1]} {edges[2]}' to graph")
+                                actual_result = self.addEdge(edges[0], edges[1], edges[2])
+                            if actual_result:
+                                print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' added to graph\n")
+                            else:
+                                print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' not added to graph\n")
+                    else:
+                        if str(actual_result) == line.capitalize().rstrip():
+                            print("PASSED:")
+                            print(f"Expected Result: {line.capitalize().rstrip()}")
+                            print(f"Actual Result:   {actual_result}\n\n")
+                        elif str(not actual_result) == line.capitalize().rstrip():
+                            print("FAILED:")
+                            print(f"Expected Result: {line.capitalize().rstrip()}")
+                            print(f"Actual Result:   {actual_result}\n\n")
+                            error_token = True
+                        else:
+                            actual_result = self.__functions(str(line.rstrip()))
+        print("Final Graph:")
+        self.printGraph()
+        print()
+        if not error_token:
+            print("OVERALL RESULTS:      SUCCESS")
+        else:
+            print("OVERALL RESULTS:      FAIL")
+
+    def __functions(self, line):
+        print(f"TESTING: {line}")
+        if "isSparse" in line:
+            return self.isSparse()
+        elif "isDense" in line:
+            return self.isDense()
+        elif "countVertices" in line:
+            return self.countVertices()
+        elif "countEdges" in line:
+            return self.countEdges()
+        elif "isConnected" in line:
+            return self.isConnected()
+        elif "isFullyConnected" in line:
+            return self.isFullyConnected()
+        elif "printGraph" in line:
+            return self.printGraph()
+        else:
+            line_split = line.split()
+            if "hasEdge" in line:
+                return self.hasEdge(line_split[1], line_split[2])
+            elif "addEdge" in line:
+                if self.weighted:
+                    return self.addEdge(line_split[1], line_split[2], line_split[3])
+                return self.addEdge(line_split[1], line_split[2])
+            elif "deleteEdge" in line:
+                return self.deleteEdge(line_split[1], line_split[2])
+            elif "addVertex" in line:
+                return self.addVertex(line_split[1])
+            elif "deleteVertex" in line:
+                return self.deleteVertex(line_split[1])
+
+
+##############################################
+################ Unit Testing ################
+##############################################
 
 class TestBasicFunction(unittest.TestCase):
     def test_empty_graph(self):
@@ -301,7 +456,7 @@ class TestBasicFunction(unittest.TestCase):
         graph.addEdge(vertices[1], vertices[1])
         self.assertTrue(graph.hasEdge(vertices[1], vertices[1]))
         self.assertEqual(str(graph), "[[0, 0, 0], "\
-                                      "[0, 1, 0], "\
+                                      "[0, 1.0, 0], "\
                                       "[0, 0, 0]]")
 
     def test_add_all_loop_edges(self):
@@ -312,9 +467,9 @@ class TestBasicFunction(unittest.TestCase):
         for i in vertices:
             graph.addEdge(i, i)
             self.assertTrue(graph.hasEdge(i, i))
-        self.assertEqual(str(graph), "[[1, 0, 0], "\
-                                      "[0, 1, 0], "\
-                                      "[0, 0, 1]]")
+        self.assertEqual(str(graph), "[[1.0, 0, 0], "\
+                                      "[0, 1.0, 0], "\
+                                      "[0, 0, 1.0]]")
 
     def test_add_all_but_loop_edges(self):
         #default is weighted
@@ -331,9 +486,9 @@ class TestBasicFunction(unittest.TestCase):
                     graph.addEdge(vertex1, vertex2)
                     self.assertTrue(graph.hasEdge(vertex1, vertex2))
                     self.assertTrue(graph.hasEdge(vertex2, vertex1))
-        self.assertEqual(str(graph), "[[0, 1, 1], "\
-                                      "[1, 0, 1], "\
-                                      "[1, 1, 0]]")
+        self.assertEqual(str(graph), "[[0, 1.0, 1.0], "\
+                                      "[1.0, 0, 1.0], "\
+                                      "[1.0, 1.0, 0]]")
 
     def test_add_all_edges(self):
         graph = Graph()
@@ -348,9 +503,9 @@ class TestBasicFunction(unittest.TestCase):
                     graph.addEdge(vertex1, vertex2)
                     self.assertTrue(graph.hasEdge(vertex1, vertex2))
                     self.assertTrue(graph.hasEdge(vertex2, vertex1))
-        self.assertEqual(str(graph), "[[1, 1, 1], "\
-                                     "[1, 1, 1], "\
-                                     "[1, 1, 1]]")
+        self.assertEqual(str(graph), "[[1.0, 1.0, 1.0], "\
+                                     "[1.0, 1.0, 1.0], "\
+                                     "[1.0, 1.0, 1.0]]")
 
     def test_add_edge_twice(self):
         graph = Graph()
@@ -533,7 +688,6 @@ class TestBasicFunction(unittest.TestCase):
             graph.addVertex(i)
         for i in range(len(vertices) - 1):
             graph.addEdge(vertices[i], vertices[i+1])
-        print(graph)
         self.assertFalse(graph.isFullyConnected())
 
     def test_fully_connected_directed_false(self):
@@ -571,4 +725,15 @@ class TestBasicFunction(unittest.TestCase):
 
 
 
-
+if "__main__" == __name__:
+    length = len(argv)
+    file_num = 1
+    print()
+    print("Starting Adjacency Matrix Graph Program")
+    print("---------------------------------------")
+    print()
+    while file_num < length:
+        print(f"Trying file '{argv[file_num]}'")
+        graph = Graph(filename=str(argv[file_num]))
+        file_num += 1
+        print("\n---------------------------------\n")
