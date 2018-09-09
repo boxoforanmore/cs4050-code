@@ -188,7 +188,7 @@ class Graph(object):
     '''
 
     def isFullyConnected(self):
-        req_edges = 2 * self.__kEdges(len(self.vertices))
+        req_edges = 2 * self.__k_edges(len(self.vertices))
         for index1, row in enumerate(self.matrix):
             for index2, col in enumerate(row):
                 if (index2 == index1) or (col <= 0):
@@ -199,13 +199,13 @@ class Graph(object):
             return True
         return False
 
-    def __kEdges(self, k):
+    def __k_edges(self, k):
         if k == 2:
             return 1
         elif k == 3:
             return k
         else:
-            return self.__kEdges(k-1) + k - 1
+            return self.__k_edges(k-1) + k - 1
 
     def __findVertices(self, index1, index2):
         return [self.vertices[index1], self.vertices[index2]]
