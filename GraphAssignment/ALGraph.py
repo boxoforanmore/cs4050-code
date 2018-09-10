@@ -1,4 +1,4 @@
-
+import unittest
 
 class Graph(object):
     class __edge(object):
@@ -7,7 +7,7 @@ class Graph(object):
             self.to_vertex = to_vertex
 
     class __vertex(object):
-        def __init__(self, name, weighted=False)
+        def __init__(self, name, weighted=False):
             self.name = name
             self.edges = []
             self.weighted = weighted
@@ -16,48 +16,50 @@ class Graph(object):
             result = str(self.name)
             if self.weighted:
                 for edge in self.edges:
-                    result += "-->" + edge.to_vertex + " (" + \
-                              edge.weight + " )"
+                    result += "-->" + str(edge.to_vertex.name) + " (" + \
+                              str(edge.weight) + " )"
             else:
                 for edge in self.edges:
-                    result += "-->" + edge.to_vertex
+                    result += "-->" + str(edge.to_vertex.name)
+            return result
 
         def addEdge(self, new_edge):
-            pos = self.findPosition(new_edge[0])
-            if pos >= 0:
+            edge = self.__findEdge(new_edge)
+            if edge != None:
                 if self.weighted:
-                    self.edges[pos].weight = new_edge[1]
+                    edge = new_edge
                     return True
                 else:
                     return False
-            self.edges.append(self.__edge(new_edge))
+            self.edges.append(new_edge)
             return True 
 
         def deleteEdge(self, del_edge):
-            pos = self.findPosition(new_edge[0])
-            if pos >= 0:
-                del self.edges[pos]
+            edge = self.__findEdge(del_edge)
+            if edge != None:
+                self.edges.remove(edge)
                 return True
             return False
                 
-        def __findPosition(self, to_node):
-            for index, edge in enumerate(self.edges):
+        def __findEdge(self, to_vertex):
+            for edge in self.edges:
                 if edge.to_vertex == to_vertex:
-                    return index
-            return -1
+                    return edge
+            return None
 
         def hasEdge(self, to_node):
             if self.__findPosition(to_vertex) >= 0:
                 return True
             return False
 
-    def __init__(self, directed=False, weighted=False)
+    def __init__(self, directed=False, weighted=False, filename=""):
         self.__vertices = []
         self.__directed = directed
         self.__weighted = weighted
+        self.__filename = filename
 
     def empty(self):
-        return (self.__vertices != [])
+        return (self.__vertices == [])
 
     def __len__(self):
         return len(self.__vertices)
@@ -65,18 +67,31 @@ class Graph(object):
     def __str__(self):
         graph_str = ""
         for vertex in self.__vertices:
-            graph_str += str(vertex)
+            graph_str += str(vertex) + "\n"
         return graph_str
+
+    def __iter__(self):
+        return iter(self.__vertices)
 
     def addVertex(self, name):
         if not self.__findVertex(name):
-            self.__vertices.append(self.__vertex(name, self.weighted))
+            self.__vertices.append(self.__vertex(name, self.__weighted))
             return True
         else:
             return False
 
     def deleteVertex(self, name):
-        pos = self.findPosition(name)
+        vertex1 = self.__findVertex(name)
+        if vertex1 != None:
+            for vertex in self.__vertices:
+                if vertex == vertex1:
+                    continue
+                self.deleteEdge(vertex.name, vertex1.name)
+            self.__vertices.remove(vertex1)
+            return True
+        return False
+
+        pos = self.__findPosition(name)
         if pos >= 0:
             del self.__vertices[pos]
             for vertex in self.__vertices:
@@ -97,22 +112,28 @@ class Graph(object):
         return False
 
     def addEdge(self, name1, name2, weight=1):
-        pos1 = self.__findPosition(name1)
-        pos2 = self.__findPosition(name2)
-        if (pos1 >= 0) and (pos2 >= 0):
-            self.__vertices[pos1].addEdge([vertex2, weight])
-            if not self.directed:
-                self.__vertices[pos2].addEdge([vertex1, weight])
+        vertex1 = self.__findVertex(name1)
+        vertex2 = self.__findVertex(name2)
+        if (None != vertex1) and (None != vertex2):
+            vertex1.addEdge(self.__edge(vertex2, weight))
+            if (not self.__directed) and (name1 != name2):
+                vertex2.addEdge(self.__edge(vertex1, weight))
             return True
         return False
 
+    def __findVertex(self, name):
+        for vertex in self.__vertices:
+            if vertex.name == name:
+                return vertex
+        return None
+
     def deleteEdge(self, name1, name2):
-        pos1 = self.__findPosition(name1)
-        pos2 = self.__findPosition(name2)
-        if (pos1 >= 0) and (pos2 >= 0):
-                self.__vertices[pos1].deleteEdge(vertex2)
-            if not self.directed:
-                self.__vertices[pos2].deleteEdge(vertex1)
+        vertex1 = self.__findVertex(name1)
+        vertex2 = self.__findVertex(name2)
+        if (vertex1 != None) and (vertex2 != None):
+            vertex1.deleteEdge(vertex2)
+            if not self.__directed:
+                vertex2.deleteEdge(vertex1)
             return True
         return False
 
@@ -170,3 +191,71 @@ class Graph(object):
 
     def isConnected(self):
         pass
+
+    def printGraph(self):
+        pass
+
+    def readGraph(self):
+        pass
+
+
+
+##############################################
+################ Unit Testing ################
+##############################################
+
+class TestBasicFunction(unittest.TestCase):
+    def test_empty_graph(self):
+        self.assertTrue(Graph().empty())
+
+    def test_add_one_vertex(self):
+        graph = Graph()
+        graph.addVertex('A')
+        self.assertFalse(graph.empty())
+        self.assertEqual(len(graph), 1)
+        self.assertEqual(str(graph), 'A\n')
+
+    def test_add_two_vertices(self):
+        graph = Graph()
+        graph.addVertex('A')
+        graph.addVertex('B')
+        self.assertEqual(len(graph), 2)
+        self.assertEqual(str(graph), 'A\nB\n')
+
+    def test_add_vertex_twice(self):
+        graph = Graph()
+        self.assertTrue(graph.addVertex('A'))
+        self.assertFalse(graph.addVertex('A'))
+        self.assertEqual(len(graph), 1)
+
+    def test_add_seven_vertices(self):
+        vertices = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+        str_graph = ""
+        graph = Graph()
+        for vertex in vertices:
+            graph.addVertex(vertex)
+            str_graph += vertex + "\n"
+        self.assertEqual(len(graph), len(vertices))
+        self.assertEqual(str(graph), str_graph)
+
+    def test_delete_solo_vertex(self):
+        graph = Graph()
+        graph.addVertex('A')
+        self.assertFalse(graph.empty())
+        self.assertTrue(graph.deleteVertex('A'))
+        self.assertEqual(len(graph), 0)
+        self.assertEqual(str(graph), "")
+
+    def test_delete_vertex_of_two(self):
+        graph = Graph()
+        graph.addVertex('A')
+        graph.addVertex('B')
+        self.assertTrue(graph.deleteVertex('A'))
+        self.assertEqual(len(graph), 1)
+        self.assertEqual(str(graph), "B\n")
+
+    def test_add_edge_to_single_vertex(self):
+        graph = Graph()
+        graph.addVertex('A')
+        self.assertTrue(graph.addEdge('A', 'A'))
+        self.assertEqual(str(graph), 'A-->A\n')
