@@ -6,6 +6,7 @@ class Graph(object):
             self.weight = weight
             self.to_vertex = to_vertex
 
+
     class __vertex(object):
         def __init__(self, name, weighted=False):
             self.name = name
@@ -24,7 +25,7 @@ class Graph(object):
             return result
 
         def addEdge(self, new_edge):
-            edge = self.__findEdge(new_edge)
+            edge = self.__findEdge(new_edge.to_vertex)
             if edge != None:
                 if self.weighted:
                     edge = new_edge
@@ -47,10 +48,6 @@ class Graph(object):
                     return edge
             return None
 
-        def hasEdge(self, to_node):
-            if self.__findPosition(to_vertex) >= 0:
-                return True
-            return False
 
     def __init__(self, directed=False, weighted=False, filename=""):
         self.__vertices = []
@@ -131,10 +128,10 @@ class Graph(object):
         vertex1 = self.__findVertex(name1)
         vertex2 = self.__findVertex(name2)
         if (vertex1 != None) and (vertex2 != None):
-            vertex1.deleteEdge(vertex2)
-            if not self.__directed:
-                vertex2.deleteEdge(vertex1)
-            return True
+            ret_val = vertex1.deleteEdge(vertex2)
+            if (not self.__directed) and (vertex1 != vertex2):
+                ret_val = vertex2.deleteEdge(vertex1)
+            return ret_val
         return False
 
     def countEdges(self):
@@ -259,3 +256,42 @@ class TestBasicFunction(unittest.TestCase):
         graph.addVertex('A')
         self.assertTrue(graph.addEdge('A', 'A'))
         self.assertEqual(str(graph), 'A-->A\n')
+
+    def test_delete_edge_from_single_vertex_true(self):
+        graph = Graph()
+        graph.addVertex('A')
+        self.assertTrue(graph.addEdge('A', 'A'))
+        self.assertTrue(graph.deleteEdge('A', 'A'))
+        self.assertEqual(str(graph), 'A\n')
+
+    def test_delete_edge_from_single_vertex_false(self):
+        graph = Graph()
+        graph.addVertex('A')
+        self.assertFalse(graph.deleteEdge('A', 'A'))
+
+    def test_add_edge_two_vertices(self):
+        graph = Graph()
+        vertices = ['A', 'B']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        self.assertTrue(graph.addEdge('A', 'B'))
+        self.assertEqual(str(graph), 'A-->B\nB-->A\n')
+
+    def test_delete_edge_two_vertices(self):
+        graph = Graph()
+        vertices = ['A', 'B']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        graph.addEdge(vertices[0], vertices[1])
+        self.assertTrue(graph.deleteEdge(vertices[0], vertices[1]))
+        self.assertEqual(str(graph), 'A\nB\n')
+
+    def test_add_all_possible_edges_three_vertices(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                graph.addEdge(vertex1, vertex2)
+        self.assertEqual(str(graph), 'A-->A-->B-->C\nB-->A-->B-->C\nC-->A-->B-->C\n')
