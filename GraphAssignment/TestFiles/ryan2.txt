@@ -1,0 +1,31 @@
+* Graphs test file by Ryan Hartman
+* File: ryan2.txt
+* This file tests a unweighted, directed graph on being Connected and Fully Connected
+unweighted
+directed
+begin
+A B C
+A B
+A C
+B C
+end
+printGraph
+true
+isConnected
+false
+isFullyConnected
+false
+addEdge B A
+true
+addEdge C A
+true
+printGraph
+true
+isFullyConnected
+false
+addEdge C B
+true
+printGraph
+true
+isFullyConnected
+true

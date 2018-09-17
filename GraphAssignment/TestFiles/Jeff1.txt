@@ -1,0 +1,71 @@
+* Graphs test file by Jeff Rowell
+* File: Jeff1.txt
+* This file tests each function at least once, besides readGraph(),
+* for a weighted undirected graph. Adds duplicate edges, adds edge
+* to the same vertex, deletes edges that don’t exists, overwrites existing edge.
+weighted
+undirected
+begin
+A F B C D
+A B 2.3
+C F 1.0
+A D 6.2
+end
+countEdges
+3
+countVertices
+5
+isFullyConnected
+false
+hasEdge B Q
+false
+isSparse
+false
+isDense
+false
+addEdge B D 4.20
+true
+countEdges
+4
+countVertices
+5
+addVertex Q
+true
+deleteVertex Q
+true
+deleteVertex B
+true
+deleteVertex B
+false
+isConnected
+false
+deleteEdge C F
+true
+hasEdge A D
+true
+hasEdge Q R
+false
+countEdges
+1
+countVertices
+4
+printGraph
+true
+isConnected
+false
+addEdge A D 100.101
+true
+printGraph
+true
+deleteEdge Z Z
+false
+addEdge D D 7.77
+true
+deleteEdge A D
+true
+isConnected
+false
+isFullyConnected
+false
+printGraph
+true

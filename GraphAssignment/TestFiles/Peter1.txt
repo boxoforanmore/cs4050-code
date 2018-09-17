@@ -1,0 +1,90 @@
+* Graphs test file by P. Nielson
+* File: Peter1.txt
+* This file tests adding and deleting edges in a sparse graph,
+* then it deletes the entire graph and creates a new, dense,
+* fully connected graph
+unweighted
+directed
+begin
+E G B D F
+end
+isSparse
+true
+addEdge G B
+true
+addEdge D F
+true
+addEdge F E
+true
+isConnected
+false
+addEdge E G
+true
+addEdge B G
+true
+addEdge E F
+true
+isSparse
+false
+isFullyConnected
+false
+addEdge B H
+false
+addEdge F D
+true
+isFullyConnected
+false
+addEdge G E
+true
+isFullyConnected
+false
+deleteVertex E
+true
+deleteVertex G
+true
+deleteVertex B
+true
+deleteVertex D
+true
+deleteVertex F
+true
+addVertex F
+true
+addVertex A
+true
+addVertex C
+true
+addVertex E
+true
+addEdge F A
+true
+addEdge A C
+true
+addEdge C E
+true
+addEdge E F
+true
+isConnected
+true
+addEdge F C
+true
+addEdge F E
+true
+addEdge A F
+true
+addEdge A C
+false
+addEdge A E
+true
+addEdge C F
+true
+addEdge C A
+true
+addEdge E A
+true
+isFullyConnected
+false
+addEdge E C
+true
+isDense
+true
