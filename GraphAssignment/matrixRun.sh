@@ -12,4 +12,6 @@ echo
 echo "Running Test Files"
 echo "python3 MatGraph.py ./TestFiles/*.txt"
 echo
+sleep 1
+echo
 python3 MatGraph.py ./TestFiles/*.txt
