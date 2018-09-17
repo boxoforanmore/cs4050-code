@@ -453,6 +453,13 @@ class TestBasicFunction(unittest.TestCase):
         self.assertTrue(graph.addEdge('A', 'A'))
         self.assertEqual(str(graph), 'A-->A\n')
 
+    def test_add_edge_twice(self):
+        graph = Graph()
+        graph.addVertex('A')
+        graph.addVertex('B')
+        self.assertTrue(graph.addEdge('A', 'B'))
+        self.assertFalse(graph.addEdge('A', 'B'))
+
     def test_delete_edge_from_single_vertex_true(self):
         graph = Graph()
         graph.addVertex('A')
