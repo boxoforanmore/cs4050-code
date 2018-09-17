@@ -46,6 +46,9 @@ class Graph(object):
             row.pop(index)
         self.matrix.pop(index)
         self.vertices.pop(index)
+        if len(self.vertices) == 0:
+            self.matrix = list([[]])
+            self.vertices = []
         return True
 
 
@@ -171,21 +174,6 @@ class Graph(object):
             for col in row:
                 temp.append(col)
         return temp
-    '''
-    # Also floyd warshall?
-    def isFullyConnected(self):
-        dist = self.__f_warshall()
-        temp = list(self.matrix)
-        for index in range(len(self.matrix)):
-            temp[index][index] = 0
-        dist = self.__flatten(dist)
-        temp = self.__flatten(temp)
-        if dist == temp:
-            return True
-        for index in range(len(dist)):
-            if not temp[index] == dist[index]:
-                return False
-    '''
 
     def isFullyConnected(self):
         req_edges = 2 * self.__k_edges(len(self.vertices))
@@ -306,7 +294,10 @@ class Graph(object):
                                 print(f"Adding edge '{edges[0]} {edges[1]} {edges[2]}' to graph")
                                 actual_result = self.addEdge(edges[0], edges[1], edges[2])
                             if actual_result:
-                                print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' added to graph\n")
+                                if self.weighted:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' added to graph\n")
+                                else:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]}' added to graph\n")
                             else:
                                 print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' not added to graph\n")
                     else:
@@ -515,6 +506,15 @@ class TestBasicFunction(unittest.TestCase):
         graph.addEdge(vertices[0], vertices[1])
         self.assertFalse(graph.addEdge(vertices[0], vertices[1]))
         self.assertFalse(graph.addEdge(vertices[1], vertices[0]))
+
+    def test_add_edge_twice(self):
+        graph = Graph(weighted=True)
+        vertices = ['A', 'B', 'C']
+        for i in vertices:
+            graph.addVertex(i)
+        graph.addEdge(vertices[0], vertices[1], 1)
+        self.assertTrue(graph.hasEdge(vertices[0], vertices[1]))
+        self.assertTrue(graph.addEdge(vertices[0], vertices[1], 11))
 
     def test_count_vertices(self):
         graph = Graph()
