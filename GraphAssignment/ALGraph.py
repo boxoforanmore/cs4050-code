@@ -1,3 +1,5 @@
+from __future__ import print_function
+from sys import argv
 import unittest
 
 class Graph(object):
@@ -56,6 +58,9 @@ class Graph(object):
         self.__filename = filename
         self.__visited = dict()
 
+        if filename != "":
+            self.readGraph(self.__filename)
+
     def empty(self):
         return (self.__vertices == [])
 
@@ -113,8 +118,12 @@ class Graph(object):
         vertex1 = self.__findVertex(name1)
         vertex2 = self.__findVertex(name2)
         if (None != vertex1) and (None != vertex2):
+            if self.hasEdge(name1, name2) and not self.__weighted:
+                return False
             vertex1.addEdge(self.__edge(vertex2, weight))
             if (not self.__directed) and (name1 != name2):
+                if self.hasEdge(name2, name1) and not self.__weighted:
+                    return False
                 vertex2.addEdge(self.__edge(vertex1, weight))
             return True
         return False
@@ -209,7 +218,6 @@ class Graph(object):
                 num_paths += 1
         return num_paths == len(self.__vertices)
 
-    # Concept from: https://www.python-course.eu/graphs_python.php
     def __find_path(self, start_vertex, end_vertex, path=None):
         if path == None:
             path = []
@@ -223,16 +231,34 @@ class Graph(object):
                     return extended_path
         return None
 
-    # Do a set for edges to make sure edge does not already exist?
-    def __findEdge(self):
+    def __findEdges(self):
         edges = []
+        weights = []
         for index, vertex in enumerate(self.__vertices):
-            edges.append([vertex.name])
             for edge in vertex.edges:
-                if self.__weighted:
-                    pass
-                else:
-                    pass
+                temp = set()
+                temp.add(vertex.name)
+                temp.add(edge.to_vertex.name)
+                if temp not in edges:
+                    edges.append(temp)
+                    if self.__weighted:
+                        weights.append(edge.weight)
+        final = []
+        if len(edges) == len(weights):
+            for index, edge in enumerate(edges):
+                temp = ""
+                for item in edge:
+                    temp += item + " "
+                temp += weights[index] + "\n"
+                final.append(temp)
+        else:
+            for index, edge in enumerate(edges):
+                temp = ""
+                for item in edge:
+                    temp += item + " "
+                temp += "\n"
+                final.append(temp)
+        return final
 
     def printGraph(self):
         vertices = ""
@@ -240,15 +266,15 @@ class Graph(object):
         weighted = "unweighted"
         directed = "undirected"
         for vertex in self.__vertices:
-            vertices += vertex + " "
-        if self.weighted:
+            vertices += vertex.name + " "
+        if self.__weighted:
             weighted = "weighted"
-        if self.directed:
+        if self.__directed:
             directed = "directed"
         final_print = weighted + "\n" + directed + "\n" + \
                       "begin\n" + vertices + "\n"
         for edge in edges:
-            final_print += edge + "\n"
+            final_print += edge
         final_print += "end\n"
         print(final_print)
         return True
@@ -304,9 +330,15 @@ class Graph(object):
                                 print(f"Adding edge '{edges[0]} {edges[1]} {edges[2]}' to graph")
                                 actual_result = self.addEdge(edges[0], edges[1], edges[2])
                             if actual_result:
-                                print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' added to graph\n")
+                                if self.__weighted:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' added to graph\n")
+                                else:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]}' added to graph\n")
                             else:
-                                print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' not added to graph\n")
+                                if self.__weighted:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]} {edges[2]}' not added to graph\n")
+                                else:
+                                    print(f"{actual_result} : edge '{edges[0]} {edges[1]}' not added to graph\n")
                     else:
                         if str(actual_result) == line.capitalize().rstrip():
                             print("PASSED:")
@@ -348,7 +380,7 @@ class Graph(object):
             if "hasEdge" in line:
                 return self.hasEdge(line_split[1], line_split[2])
             elif "addEdge" in line:
-                if self.weighted:
+                if self.__weighted:
                     return self.addEdge(line_split[1], line_split[2], line_split[3])
                 return self.addEdge(line_split[1], line_split[2])
             elif "deleteEdge" in line:
@@ -699,3 +731,17 @@ class TestBasicFunction(unittest.TestCase):
         graph.addEdge('C', 'D', 4.2)
         graph.addEdge('C', 'E', 6.9)
         self.assertFalse(graph.isConnected())
+
+
+if "__main__" == __name__:
+    length = len(argv)
+    file_num = 1 
+    print()
+    print("Starting Adjacency Matrix Graph Program")
+    print("---------------------------------------")
+    print()
+    while file_num < length:
+        print(f"Trying file '{argv[file_num]}'")
+        graph = Graph(filename=str(argv[file_num]))
+        file_num += 1
+        print("\n---------------------------------\n")
