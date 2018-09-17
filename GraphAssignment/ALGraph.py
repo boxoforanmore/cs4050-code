@@ -744,7 +744,7 @@ if "__main__" == __name__:
     length = len(argv)
     file_num = 1 
     print()
-    print("Starting Adjacency Matrix Graph Program")
+    print("Starting Adjacency List Graph Program")
     print("---------------------------------------")
     print()
     while file_num < length:
