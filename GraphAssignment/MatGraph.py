@@ -195,6 +195,50 @@ class Graph(object):
         else:
             return self.__k_edges(k-1) + k - 1
 
+    def network_topo(self):
+        if self.empty():
+            return None
+        if not self.isConnected():
+            return None
+        if self.isFullyConnected():
+            return "Fully Connected Mesh"
+        req_edges = 2 
+        success = 0 
+        for row in self.matrix:
+            edge_count = 0 
+            for col in row:
+                if col==1:
+                    edge_count += 1
+            if req_edges == edge_count:
+                success += 1
+                continue
+            else:
+                success = 0 
+                break
+        num_verts = self.countVertices()
+        if success == num_verts:
+            return "Ring"
+        success = 0 
+        center_found = False
+        req_edges = num_verts - 1 
+        for row in self.matrix:
+            edge_count = 0 
+            for col in row:
+                if col==True:
+                    edge_count += 1
+            if edge_count == 1:
+                success += 1
+                continue
+            elif (center_found == False) and (edge_count == req_edges):
+                success += 1
+                center_found = True
+            else:
+                success = 0 
+                break
+        if success == num_verts:
+            return "Star"
+        return None
+
     def __findVertices(self, index1, index2):
         return [self.vertices[index1], self.vertices[index2]]
 
@@ -723,7 +767,54 @@ class TestBasicFunction(unittest.TestCase):
                 graph.addEdge(vertex1, vertex2)    
         self.assertTrue(graph.isFullyConnected())
 
+    def test_no_network_topo_empty(self):
+        graph = Graph()
+        self.assertEqual(graph.network_topo(), None)
+      
+    def test_connected_no_network_topo_some(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        graph.addEdge('A', 'B')
+        graph.addEdge('A', 'E')
+        graph.addEdge('B', 'C')
+        graph.addEdge('C', 'D')
+        self.assertEqual(graph.network_topo(), None)
 
+    def test_fully_connected_mesh(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E', 'F']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                if vertex1 != vertex2:
+                    graph.addEdge(vertex1, vertex2)
+        self.assertTrue(graph.isFullyConnected())
+        self.assertEqual(graph.network_topo(), "Fully Connected Mesh")
+
+    def test_ring_topo(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E', 'F']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        for index, vertex in enumerate(vertices):
+            if (index + 1) == len(vertices):
+                graph.addEdge(vertex, vertices[0])
+                break
+            graph.addEdge(vertex, vertices[index+1])
+        self.assertEqual(graph.network_topo(), "Ring")
+
+    def test_star_topo(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E', 'F']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        for vertex in vertices:
+            if vertex != vertices[0]:
+                graph.addEdge(vertices[0], vertex)
+        self.assertEqual(graph.network_topo(), "Star")
 
 if "__main__" == __name__:
     length = len(argv)
