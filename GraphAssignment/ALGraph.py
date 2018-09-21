@@ -3,19 +3,53 @@ from sys import argv
 import unittest
 
 class Graph(object):
+    """
+    This class represents a graph as an Adjacency List
+    """
+
     class __edge(object):
+        """
+        This subclass is an edge object holding the connected vertex
+        and the weight
+        """
+
         def __init__(self, to_vertex, weight=1):
+            """
+            The constructor/initializer for the edge object
+
+            :param to_vertex: The adjacent vertex
+            :param weight: The weight of the connected edge (default=1)
+            """
+
             self.weight = weight
             self.to_vertex = to_vertex
 
 
     class __vertex(object):
+        """
+        This subclass is a vertex object holding the connected
+        vertices in a list and associated methods
+        """
+
         def __init__(self, name, weighted=False):
+            """
+            The constructor/initializer for the edge object
+
+            :param name: The vertex name
+            :param weighted: If the graph is weighted or not
+            """
+
             self.name = name
             self.edges = []
             self.weighted = weighted
 
         def __str__(self):
+            """
+            Returns a string representation of the matrix in adjacency list format
+
+            :return: The string representation of the list
+            """
+
             result = str(self.name)
             if self.weighted:
                 for edge in self.edges:
@@ -27,6 +61,14 @@ class Graph(object):
             return result
 
         def addEdge(self, new_edge):
+            """
+            Adds an edge to the vertex's list of edges (if it is not already present)
+
+            :param new_edge: The new edge object to be added
+            :return: True or False
+            :rtype: bool
+            """
+
             edge = self.findEdge(new_edge.to_vertex)
             if edge != None:
                 if self.weighted:
@@ -38,6 +80,14 @@ class Graph(object):
             return True 
 
         def deleteEdge(self, del_edge):
+            """
+            Deletes an edge from the vertex's list of edges (if it is present)
+
+            :param del_edge: The edge object to be deleted
+            :return: True or False
+            :rtype: bool
+            """
+
             edge = self.findEdge(del_edge)
             if edge != None:
                 self.edges.remove(edge)
@@ -45,6 +95,12 @@ class Graph(object):
             return False
                 
         def findEdge(self, to_vertex):
+            """
+            Finds an edge and returns it if it exists, otherwise, it returns None
+            :param to_vertex: The vertex to find
+            :return: The found edge or None
+            :rtype: edge or None
+            """
             for edge in self.edges:
                 if edge.to_vertex == to_vertex:
                     return edge
@@ -52,6 +108,14 @@ class Graph(object):
 
 
     def __init__(self, directed=False, weighted=False, filename=""):
+        """
+        The constructor/initializer for the graph object
+
+        :param directed: If the graph is directed or not (default=False)
+        :param weighted: If the graph is weighted or not (default=False)
+        :param filename: The input filename (default="")
+        """
+
         self.__vertices = []
         self.__directed = directed
         self.__weighted = weighted
@@ -62,21 +126,57 @@ class Graph(object):
             self.readGraph(self.__filename)
 
     def empty(self):
+        """
+        This checks if the graph is empty by checking the list of vertices.
+
+        :return: True or False
+        :rtype: bool
+        """
         return (self.__vertices == [])
 
     def __len__(self):
+        """
+        This gets the length of the graph (the length of the vertices)
+
+        :return: The number of vertices
+        :rtype: int
+        """
         return len(self.__vertices)
 
     def __str__(self):
+        """
+        This returns a string representation of the entire graph as
+        an Adjacency List, calling the individual functions on each
+        vertex
+
+        :return: The string representation of the list
+        :rtype: str
+        """
+
         graph_str = ""
         for vertex in self.__vertices:
             graph_str += str(vertex) + "\n"
         return graph_str
 
     def __iter__(self):
+        """
+        This creates an iteratable form of the graph
+
+        :return: The iteratable of the primary Adjacency List
+        :rtype: iter/list
+        """
+
         return iter(self.__vertices)
 
     def addVertex(self, name):
+        """
+        This adds a new vertex to the graph if it does not already exist
+
+        :param name: The name of the vertex to be added
+        :return: True or False
+        :rtype: bool
+        """
+
         if not self.__findVertex(name):
             self.__vertices.append(self.__vertex(name, self.__weighted))
             return True
@@ -84,6 +184,14 @@ class Graph(object):
             return False
 
     def deleteVertex(self, name):
+        """
+        This deletes a vertex from the graph if it exists
+
+        :param name: The name of the vertex to be deleted
+        :return: True or False
+        :rtype: bool
+        """
+
         vertex1 = self.__findVertex(name)
         if vertex1 != None:
             for vertex in self.__vertices:
@@ -94,27 +202,51 @@ class Graph(object):
             return True
         return False
 
-        pos = self.__findPosition(name)
-        if pos >= 0:
-            del self.__vertices[pos]
-            for vertex in self.__vertices:
-                self.deleteEdge(vertex.name, name)
-            return True
-        return False
 
     def __findPosition(self, name):
+        """
+        This finds the index/position of the vertex in the
+        vertices list if it exists
+
+        :param name: The name of the vertex to be found
+        :return: The index or -1 if not found
+        :rtype: int
+        """
+
         for index, vertex in enumerate(self.__vertices):
             if vertex.name == name:
                 return index
         return -1
 
     def __findVertex(self, name):
+        """
+        This checks that the vertex exists and
+        returns False if it does not
+
+        :param name: The name of the vertex to be found
+        :return: True or False
+        :rtype:
+        """
+
         for vertex in self.__vertices:
             if vertex.name == name:
                 return True
         return False
 
     def addEdge(self, name1, name2, weight=1):
+        """
+        This adds an edge if both vertices exist and overwrite
+        the weight if the graph is weighted; if the graph is
+        not weighted and the edge exists, the method returns
+        False
+
+        :param name1: The first vertex
+        :param name2: The second vertex
+        :param weight: The weight of the edge
+        :return: True or False
+        :rtype: bool
+        """
+
         vertex1 = self.__findVertex(name1)
         vertex2 = self.__findVertex(name2)
         if (None != vertex1) and (None != vertex2):
@@ -129,12 +261,31 @@ class Graph(object):
         return False
 
     def __findVertex(self, name):
+        """
+        This finds and returns a vertex object based
+        on it's name value; otherwise, it returns None
+
+        :param name: The name of the vertex to be returned
+        :return: The found vertex object or None
+        :rtype: vertex or None
+        """
+
         for vertex in self.__vertices:
             if vertex.name == name:
                 return vertex
         return None
 
     def deleteEdge(self, name1, name2):
+        """
+        This deletes an edge if it exists from the name
+        of the two connected vertices
+
+        :param name1: The first vertex
+        :param name2: The second vertex
+        :return: True or False
+        :rtype: bool
+        """
+
         vertex1 = self.__findVertex(name1)
         vertex2 = self.__findVertex(name2)
         if (vertex1 != None) and (vertex2 != None):
@@ -145,6 +296,14 @@ class Graph(object):
         return False
 
     def countEdges(self):
+        """
+        This counts the number of edges and loops in the graph
+        and returns the number
+
+        :return: The number of edges in the graph
+        :rtype: int
+        """
+
         num_edges = 0
         num_loops = 0
         for vertex in self.__vertices:
@@ -158,25 +317,68 @@ class Graph(object):
         return (num_edges // 2) + num_loops
 
     def countVertices(self):
+        """
+        This counts the number of vertices in the graph
+        and returns the number
+
+        :return: The number of vertices in the graph
+        :rtype: int
+        """
+
         return len(self)
 
     def __sparsity(self):
+        """
+        This calculates the sparsity/density value
+        and returns the number
+
+        :return: The sparsity/density value
+        :rtype: float
+        """
+
         if self.__directed:
             return 100 * (self.countEdges()) / (self.countVertices() * 2)
         num_vertices = self.countVertices()
         return 100 * (2 * self.countEdges()) / ((3**(num_vertices-2)) + num_vertices)
 
     def isSparse(self):
+        """
+        This uses the graph's sparsity value to
+        determine if the graph is sparse or not
+
+        :return: True or False
+        :rtype: bool
+        """
+
         if self.__sparsity() > 15:
             return False
         return True
 
     def isDense(self):
+        """
+        This uses the graph's density value to
+        determine if the graph is dense or not
+
+        :return: True or False
+        :rtype: bool
+        """
+
         if self.__sparsity() > 85:
             return True
         return False
 
     def __k_edges(self, k):
+        """
+        This recursively calculates and returns
+        the number of edges needed for a graph
+        (or subgraph) to be a clique from its
+        number of vertices
+
+        :param k: The number of vertices
+        :return: The number of required edges
+        :rtype: int
+        """
+
         if k == 2:
             return 1
         if k == 3:
@@ -185,6 +387,17 @@ class Graph(object):
             return self.__k_edges(k-1) + k - 1
 
     def hasEdge(self, name1, name2):
+        """
+        This checks to see if a graph has an edge from
+        the vertex with name1 to the vertex with name2
+        and returns True if it is found
+
+        :param name1: The starting vertex name
+        :param name2: The ending vertex name
+        :return: True or False
+        :rtype: bool
+        """
+
         vertex1 = self.__findVertex(name1)
         vertex2 = self.__findVertex(name2)
         if (vertex1 != None) and (vertex2 != None):
@@ -193,6 +406,14 @@ class Graph(object):
         return False
 
     def isFullyConnected(self):
+        """
+        This checks if a graph is fully connected
+        using the k_cliques equation/method
+
+        :return: True or False
+        :rtype: bool
+        """
+
         if len(self.__vertices) == 0:
             return False
         elif len(self.__vertices) == 1:
@@ -209,6 +430,15 @@ class Graph(object):
         return False
 
     def isConnected(self):
+        """
+        This checks if a graph is connected (there is
+        a path from one node to every other node) and
+        returns True if it is
+
+        :return: True or False
+        :rtype: bool
+        """
+
         self.__visited = dict()
         for vertex in self.__vertices:
             self.__visited[vertex] = 0
@@ -223,6 +453,15 @@ class Graph(object):
         return num_paths == len(self.__vertices)
 
     def network_topo(self):
+        """
+        This checks for one of three network topologies
+        ("Fully Connected Mesh", "Ring", "Star") and
+        returns None if none are identified
+
+        :return: The type of network topology or None
+        :rtype: str or None
+        """
+
         if not self.isConnected():
             return None
         if self.isFullyConnected():
@@ -258,7 +497,17 @@ class Graph(object):
             return "Star"
         return None
 
-    def is_isomorphic(self, other):
+    def __is_isomorphic(self, other):
+        """
+        (INCOMPLETE)
+        This checks that two graphs are isomorphic and
+        returns the mapping if they are
+
+        :param other: The other graph object to be analyzed
+        :return: The mapping of the isomorphic graph or None
+        :rtype: dict or None
+        """
+
         if not (self.countVertices() == other.countVertices()) or not (self.countEdges() == other.countEdges()):
             return False
         if self.isFullyConnected() and other.isFullyConnected():
@@ -309,6 +558,19 @@ class Graph(object):
                 pass                
 
     def __find_path(self, start_vertex, end_vertex, path=None):
+        """
+        This recursively finds a path from any start vertex
+        to an end vertex (if they are connected), while
+        avoiding cycles; returns a list of the path if
+        one is found
+
+        :param start_vertex: The starting vertex
+        :param end_vertex: The ending vertex
+        :param path: The vertices already visited in the path (default=None)
+        :return: The path or None
+        :rtype: list or None
+        """
+
         if path == None:
             path = []
         path.append(start_vertex)
@@ -322,6 +584,15 @@ class Graph(object):
         return None
 
     def __findEdges(self):
+        """
+        This finds and returns a list of all edges
+        (with weights if weighted) for printing in
+        it's input format
+
+        :return: The list of edges in the graph
+        :rtype: list
+        """
+
         edges = []
         weights = []
         for index, vertex in enumerate(self.__vertices):
@@ -351,6 +622,15 @@ class Graph(object):
         return final
 
     def printGraph(self):
+        """
+        This prints a representation of the graph
+        similar to the input taken from the
+        readGraph method
+
+        :return: True
+        :rtype: bool
+        """
+
         vertices = ""
         edges = self.__findEdges()
         weighted = "unweighted"
@@ -370,6 +650,15 @@ class Graph(object):
         return True
 
     def readGraph(self, filename):
+        """
+        This reads a graph from a given input
+        file and parses through it to run and
+        test functionality
+
+        :param filename: The input file name
+        :return: None
+        """
+
         begin_token = False
         end_token = False
         vertices_token = False
@@ -450,6 +739,16 @@ class Graph(object):
             print("OVERALL RESULTS:      FAIL")
 
     def __functions(self, line):
+        """
+        This receives a line from the input file
+        and matches it with an internal
+        method to run and test
+
+        :param line: The line from the input file
+        :return: The return value of the called method
+        :rtype: bool or int
+        """
+
         print(f"TESTING: {line}")
         if "isSparse" in line:
             return self.isSparse()
