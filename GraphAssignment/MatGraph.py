@@ -3,8 +3,21 @@ import unittest
 from sys import argv
 from copy import deepcopy
 
+
 class Graph(object):
+    """
+    This class represents a graph as an Adjacency Matrix
+    """
+
     def __init__(self, weighted=False, directed=False, filename=""):
+        """
+        The constructor/initializer for the graph object
+
+        :param weighted: True/False for weighted (default=False)
+        :param directed: True/False for directed (default=False)
+        :param filename: InputFilename (default="")
+        """
+
         self.matrix = [[]]
         self.vertices = []
         self.weighted = weighted
@@ -13,15 +26,44 @@ class Graph(object):
             self.readGraph(filename)
 
     def empty(self):
+        """
+        Checks if the graph is empty
+
+        :return: True or False
+        :rtype: bool
+        """
+
         return (len(self.vertices) == 0)
 
     def __str__(self):
+        """
+        Returns string representation of graph as a matrix
+
+        :return: A matrix of 0s or not 0s
+        :rtype: str
+        """
+
         return str(self.matrix)
 
     def str_vertices(self):
+        """
+        Returns a string representation of just the vertices
+
+        :return: A list of the vertices in the graph
+        :rtype: str
+        """
+
         return str(self.vertices)
 
     def addVertex(self, vertex):
+        """
+        Adds a vertex (if it does not exist) and returns a boolean value based on if it was added
+
+        :param vertex: A vertex to be added
+        :return: True or False
+        :rtype: bool
+        """
+
         if vertex in self.vertices:
             return False
         self.vertices.append(vertex)
@@ -29,6 +71,12 @@ class Graph(object):
         return True
 
     def __expand(self):
+        """
+        Expands matrix as vertices are added
+
+        :return: None
+        """
+
         if len(self.vertices) == 1:
             self.matrix[0].append(0)
         else:
@@ -36,9 +84,15 @@ class Graph(object):
             for row in self.matrix:
                 row.append(0)
 
-    # if unweighted graph, just set weights to 1
-    # How can I do this?
     def deleteVertex(self, vertex):
+        """
+        Deletes vertex (if it exists) and returns a boolean value based on if it was deleted;
+        Additionally, this method reduces the matrix size if the vertex is found
+
+        :param vertex: Vertex to be deleted
+        :return: True or False
+        :rtype: bool
+        """
         if vertex not in self.vertices:
             return False
         index = (self.__findIndices(vertex, vertex))[0]
@@ -51,9 +105,16 @@ class Graph(object):
             self.vertices = []
         return True
 
-
-    # Need to check if directed
     def hasEdge(self, vertex1, vertex2):
+        """
+        Checks to see if there is a single edge from vertex1 to vertex2
+
+        :param vertex1: The starting vertex
+        :param vertex2: The ending vertex
+        :return: True or False
+        :rtype: bool
+        """
+
         indices = self.__findIndices(vertex1, vertex2)
         if self.matrix[indices[0]][indices[1]] == 0:
             return False
@@ -62,6 +123,15 @@ class Graph(object):
 
 
     def __findIndices(self, vertex1, vertex2):
+        """
+        Finds the indices for any two vertices in the graph (if they exist)
+
+        :param vertex1: The first/row vertex
+        :param vertex2: The second/column vertex
+        :return: A list of the indices for the given vertices
+        :rtype: list
+        """
+
         index = 0
         indices = [-1, -1]
         for vertex in self.vertices:
@@ -72,10 +142,19 @@ class Graph(object):
             index += 1
         return indices
 
-
-    # Check if edge already exists before adding (specs seem to not allow for multiple edges)
-    # Check if directed or undirected (undirected should have mirrored matrix)
     def addEdge(self, vertex1, vertex2, weight=1):
+        """
+        Adds an edge to the graph if the vertices exist and returns true if it was successfully added;
+        it also adds a default weight to even unweighted graphs to allow for later algorithms to function.
+        Only weighted graphs can have edges added twice (the weight at the edge is updated)
+
+        :param vertex1: The starting vertex
+        :param vertex2: The ending vertex
+        :param weight: User selected weight or 1
+        :return: True or False
+        :rtype: bool
+        """
+
         indices = self.__findIndices(vertex1, vertex2)
         if (-1 in indices):
             return False
@@ -90,9 +169,18 @@ class Graph(object):
             self.matrix[indices[1]][indices[0]] = float(weight)
         return True
 
-    # directed and undirected
-    # Check if there is an item present before deleting
+
     def deleteEdge(self, vertex1, vertex2):
+        """
+        Deletes an edge and returns True if it exists (otherwise, False); deleting simply
+        sets the item in the matrix to 0
+
+        :param vertex1: The starting vertex
+        :param vertex2: The ending vertex
+        :return: True or False
+        :rtype: bool
+        """
+
         indices = self.__findIndices(vertex1, vertex2)
         if (-1 in indices) or (not self.hasEdge(vertex1, vertex2)):
              return False
@@ -102,12 +190,26 @@ class Graph(object):
         return True
 
     def isSparse(self):
+        """
+        Checks if graph is sparsely connected (sparsity/density < 15)
+        and returns True if it is
+
+        :return: True or False
+        :rtype: bool
+        """
         if self.__sparsity() > 15:
             return False
         else:
             return True
 
     def __sparsity(self):
+        """
+        Calculates sparsity/density depending on if it is directed or undirected
+
+        :return: Numeric value representing sparsity/density
+        :rtype: float
+        """
+
         if self.directed:
             return 100 * (self.countEdges()) / (self.countVertices() * 2)
         else:
@@ -115,16 +217,38 @@ class Graph(object):
             return 100 * (2 * self.countEdges()) / ((3**(num_vertices-2)) + num_vertices)
 
     def isDense(self):
+        """
+        Checks if graph is densely connected (sparsity/density > 85)
+        and returns True if it is
+
+        :return: True or False
+        :rtype: bool
+        """
+
         if self.__sparsity() > 85:
             return True
         else:
             return False
 
     def countVertices(self):
+        """
+        Counts the number of vertices in the graph
+
+        :return: Number of vertices in graph
+        :rtype: int
+        """
+
         return len(self.vertices)
-        pass
 
     def countEdges(self):
+        """
+        Counts number of loops in the graph, and the number of edges in the graph;
+        numEdges is halved for undirected graphs (A->B == B->A)
+
+        :return: Number of edges in a graph
+        :rtype: int
+        """
+
         numEdges = 0
         numLoops = 0
         for index1, row in enumerate(self.matrix):
@@ -138,10 +262,15 @@ class Graph(object):
             return numEdges + numLoops
         else:
             return (numEdges // 2) + numLoops
-        
 
-    # Do floyd warshall
     def isConnected(self):
+        """
+        Checks if a graph is connected and returns True if it is;
+        calls Floyd Warshall method and checks for any infinities
+
+        :return: True or False
+        :rtype: bool
+        """
         distance = self.__f_warshall()
         for row in distance:
             for col in row:
@@ -151,6 +280,14 @@ class Graph(object):
         return True
 
     def __f_warshall(self):
+        """
+        Finds all shortest distances from any vertex to another vertex,
+        keeping a value of infinity if no path exists
+
+        :return: A matrix containing the shortest distances
+        :rtype: list
+        """
+
         num_vert = self.countVertices()
         distance = deepcopy(self.matrix)
         for index1, row in enumerate(distance):
@@ -169,6 +306,15 @@ class Graph(object):
         return distance
 
     def __flatten(self, matrix):
+        """
+        Flattens the matrix into a single list if matrix
+        needs to be processed faster
+
+        :param matrix: A matrix to be flattened
+        :return: The flattened matrix
+        :rtype: list
+        """
+
         temp = []
         for row in self.matrix:
             for col in row:
@@ -176,6 +322,14 @@ class Graph(object):
         return temp
 
     def isFullyConnected(self):
+        """
+        Checks if the graph is fully connected by comparing the non-loop
+        edges against the return value of a function that provides the
+        number of necessary edges for a clique of a simple graph
+
+        :return: True or False
+        :rtype: bool
+        """
         req_edges = 2 * self.__k_edges(len(self.vertices))
         for index1, row in enumerate(self.matrix):
             for index2, col in enumerate(row):
@@ -188,6 +342,15 @@ class Graph(object):
         return False
 
     def __k_edges(self, k):
+        """
+        Returns the number of edges necessary for a clique of size "k",
+        where k is the number of vertices
+
+        :param k: The number of vertices
+        :return: The number of edges required
+        :rtype: bool
+        """
+
         if k == 2:
             return 1
         elif k == 3:
@@ -196,6 +359,15 @@ class Graph(object):
             return self.__k_edges(k-1) + k - 1
 
     def network_topo(self):
+        """
+        This method checks if the graph represents one of the network
+        topologies ("Fully Connected Mesh", "Ring", "Star"), and returns
+        either the name of the found topology, or None
+
+        :return: The name of the found network topology or None
+        :rtype: str or None
+        """
+
         if self.empty():
             return None
         if not self.isConnected():
@@ -240,9 +412,26 @@ class Graph(object):
         return None
 
     def __findVertices(self, index1, index2):
+        """
+        Finds and returns pairs of vertices based on their index
+
+        :param index1: The index of one vertex
+        :param index2: The index of one vertex
+        :return: A list of vertices
+        :rtype: list
+        """
+
         return [self.vertices[index1], self.vertices[index2]]
 
     def __findEdges(self):
+        """
+        Retrieves all valid edges in a grap and generates a list of
+        the edges and their weights
+
+        :return: A list of edges
+        :rtype: list
+        """
+
         edges = []
         visited = [[False for _ in range(len(self.vertices))] for _ in range(len(self.vertices))]
         for index1, row in enumerate(self.matrix):
@@ -267,8 +456,15 @@ class Graph(object):
                             visited[index1][index2], visited[index2][index1] = True, True
         return edges
 
-    # Print out similar output to input
     def printGraph(self):
+        """
+        Prints out a representation of the graph similar
+        to the format of the input file
+
+        :return: True
+        :rtype: bool
+        """
+
         vertices = ""
         edges = self.__findEdges()
         weighted = "unweighted"
@@ -288,6 +484,14 @@ class Graph(object):
         return True
 
     def readGraph(self, filename):
+        """
+        Reads an input file representation of a graph with tests
+        for funcitonality
+
+        :param filename: The input filename
+        :return: None
+        """
+
         begin_token = False
         end_token = False
         vertices_token = False
@@ -365,6 +569,16 @@ class Graph(object):
             print("OVERALL RESULTS:      FAIL")
 
     def __functions(self, line):
+        """
+        Parser for identifying and running specific functions
+        from a test file; returns the return value of a
+        function call
+
+        :param line: Input line from file
+        :return: The return value of the function
+        :rtype: bool or int
+        """
+
         print(f"TESTING: {line}")
         if "isSparse" in line:
             return self.isSparse()
