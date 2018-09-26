@@ -3,14 +3,14 @@ echo
 echo
 echo
 `cd ./PriorityQueue/`
-`./PriorityQueue/tests.sh`
+`./tests.sh`
 `cd ../.`
 echo
 echo
 sleep 1
 echo
 `cd ./GraphAssignment/`
-`./GraphAssignment/tests.sh`
+`./tests.sh`
 `cd ../`
 echo
 echo
