@@ -7,7 +7,7 @@ echo
 cd ../
 echo
 echo
-wait 1
+sleep 1
 echo
 `cd ./GraphAssignment/`
 `./GraphAssignment/tests.sh`
