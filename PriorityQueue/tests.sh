@@ -7,7 +7,7 @@ echo
 echo "PRIORITY QUEUE:"
 echo
 echo "Running: python3 -m unittest PriorityQueue.py"
-echo `python3 -m unittest ./PriorityQueue.py`
+python3 -m unittest PriorityQueue.py
 echo
 echo
 echo
