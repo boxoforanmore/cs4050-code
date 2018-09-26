@@ -183,7 +183,8 @@ class PriorityQueue(object):
                 "name": name,
                 "time": time}
 
-        print(f"Queueing item: {item}")
+        # Uncomment print statement for debugging
+        #print(f"Queueing item: {item}")
         needsSort = False
         if self.empty() or (item["priority"] <= self.back.value["priority"]):
             self.__push_back(item)
@@ -246,7 +247,8 @@ class PriorityQueue(object):
 
     def dequeue(self):
         item = self.__pop_front()
-        print(f"Dequeueing item: {item}")
+        # Uncomment below for debugging
+        # print(f"Dequeueing item: {item}")
         return item
 
 
