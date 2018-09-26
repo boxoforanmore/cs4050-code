@@ -4,7 +4,7 @@ echo
 echo
 `cd ./PriorityQueue/`
 `./PriorityQueue/tests.sh`
-cd ../
+`cd ../.`
 echo
 echo
 sleep 1
