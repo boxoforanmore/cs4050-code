@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/boxoforanmore/cs4050-code.svg?branch=master)](https://travis-ci.com/boxoforanmore/cs4050-code)
+
 
 Various programs made for Algorithms and Algorithm Analysis Class
 
