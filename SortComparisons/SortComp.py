@@ -244,11 +244,6 @@ class BasicTests(unittest.TestCase):
 
 if __name__ == "__main__":
     random_list = random.sample(range(list_range), list_length)
-    random_list1 = deepcopy(random_list)
-    random_list2 = deepcopy(random_list)
-    random_list3 = deepcopy(random_list)
-    random_list4 = deepcopy(random_list)
-    random_list5 = deepcopy(random_list)
     sort_dict = {}
     sort_dict["Shell Sort (halved)"] = timeit.timeit(wrapper(shell_sort, deepcopy(random_list)), number=10)
     sort_dict["Shell Sort (3-based-gap)"] = timeit.timeit(wrapper(shell_sort_book, deepcopy(random_list)), number=10)
