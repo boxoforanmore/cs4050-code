@@ -1,0 +1,14 @@
+Fastest to Slowest Sorts with Randomized List of 25000 elements:
+-----------------------------------------------
+Tim Sort : 0.037324874982004985 seconds
+------------------------
+Shell Sort (3-based-gap) : 1.244707282021409 seconds
+------------------------
+Shell Sort (halved) : 1.8563070770178456 seconds
+------------------------
+Merge Sort : 2.052139388018986 seconds
+------------------------
+Insertion Sort : 103.89502500797971 seconds
+------------------------
+Bubble Sort : 596.306079492002 seconds
+------------------------
