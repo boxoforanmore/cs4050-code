@@ -254,7 +254,7 @@ if __name__ == "__main__":
     sorted_keys = sorted(sort_dict, key=sort_dict.__getitem__)
 
     with open("output.txt", "w+") as output:
-        string = "Fastest to Slowest Sorts with Randomized List of 25000 elements:\n" \
+        string = "Fastest to Slowest Sorts with Randomized List of " + str(list_length)  + " elements:\n" \
                  "-----------------------------------------------\n"
         for key in sorted_keys:
             string += str(key) + " : " + str(sort_dict[key]) + " seconds\n" \
