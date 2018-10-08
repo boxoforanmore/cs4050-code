@@ -250,7 +250,7 @@ if __name__ == "__main__":
     sort_dict["Insertion Sort"] = timeit.timeit(wrapper(insertion_sort, deepcopy(random_list)), number=10)
     sort_dict["Merge Sort"] = timeit.timeit(wrapper(merge_sort, deepcopy(random_list)), number=10)
     sort_dict["Tim Sort"] = timeit.timeit(wrapper(tim_sort, deepcopy(random_list)), number=10)
-    sort_dict["Tim Sort"] = timeit.timeit(wrapper(bubble_sort, deepcopy(random_list)), number=10)
+    sort_dict["Bubble Sort"] = timeit.timeit(wrapper(bubble_sort, deepcopy(random_list)), number=10)
     sorted_keys = sorted(sort_dict, key=sort_dict.__getitem__)
 
     with open("output.txt", "w+") as output:
