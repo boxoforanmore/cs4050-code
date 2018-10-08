@@ -14,3 +14,6 @@ cd ./GraphAssignment/
 cd ../
 echo
 echo
+echo
+cd ./SortComparisons/
+./tests.sh
