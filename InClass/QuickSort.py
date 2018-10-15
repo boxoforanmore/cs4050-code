@@ -1,8 +1,51 @@
 import random
-
+from copy import deepcopy
 
 def quick_sort_no_recur(lst):
-    pass
+    stack = list()
+    start = 0
+    end = len(lst) - 1
+
+    stack.append((start, end))
+
+    while(len(stack) != 0):
+        top = stack.pop(len(stack)-1)
+        if((top[1] - top[0] + 1) <= 15):
+            insertion_sort(lst, top[0], top[1])
+            continue
+        else:
+            end = top[1]
+            start = top[0]
+            mid = (start+end)//2
+            if lst[end] < lst[start]:
+                lst[end], lst[start] = lst[start], lst[end]
+            if lst[end] < lst[mid]:
+                lst[end], lst[mid] = lst[mid], lst[mid]
+            if lst[start] < lst[mid]:
+                lst[mid], lst[start] = lst[start], lst[mid]
+            pivot = lst[start]
+
+            i = start + 1
+            j = start + 1
+
+            while (i <= j):
+                while (i < (len(lst)-1)) and (lst[i] < pivot):
+                    i += 1
+                while (j < (len(lst)-1)) and (lst[j] > pivot):
+                    j += 1
+                if (i <= j):
+                    lst[i], lst[j] = lst[j], lst[i]
+                    if ((len(lst)-1)) not in (i, j):
+                        i += 1
+                        j += 1
+                    else:
+                        break
+                else:
+                    lst[j], lst[i] = lst[i], lst[j]
+            if start < j:
+                stack.append((start, i))
+            if i < end:
+                stack.append((j, end))
 
 
 def quick_sort(lst):
@@ -12,7 +55,7 @@ def partition(lst, start, end):
     if (end - start + 1) <= 15:
         insertion_sort(lst, start, end)
         return
-    else:
+    elif start < end:
         mid = (start+end)//2
         if lst[end] < lst[start]:
             lst[end], lst[start] = lst[start], lst[end]
@@ -23,8 +66,8 @@ def partition(lst, start, end):
 
         pivot = lst[start]
 
-        i = start
-        j = end - 1
+        i = start + 1
+        j = end
 
         while (i <= j):
             while (lst[i] < pivot):
@@ -35,14 +78,19 @@ def partition(lst, start, end):
                 lst[i], lst[j] = lst[j], lst[i]
                 i += 1
                 j -= 1
+            else:
+                lst[j], lst[i] = lst[i], lst[j]
+        #lst[start], lst[mid] = lst[mid], lst[start]
         if start < j:
-            partition(lst, start, mid)
+            partition(lst, start, i)
         if i < end:
-            partition(lst, mid, end)
+            partition(lst, j, end)
 
 def insertion_sort(lst, low, high):
     print("hi, it's me")
-    for i in range(low, high):
+    if low == high:
+        return
+    for i in range(low, high+1):
         j = i - 1 
         while(j >= 0) and (lst[j] > lst[j+1]):
             temp = lst[j+1]
@@ -62,16 +110,21 @@ def is_sorted(lst):
 
 def not_sorted_index(lst):
     index1 = 0
-    while index1 < len(random_list):
+    while index1 < len(lst):
         if lst[index1] > lst[index1 + 1]:
             return index1
         index1 += 1
     return None
 
-random_list = random.sample(range(10000), 500)
-print(random_list)
-quick_sort(random_list)
-print(random_list)
-print(is_sorted(random_list))
-if not is_sorted(random_list):
-    print(random_list[0:not_sorted_index(random_list)+1])
+lst = random.sample(range(10000), 500)
+lst2 = deepcopy(lst)
+print(lst)
+quick_sort(lst)
+#quick_sort_no_recur(lst2)
+print(lst)
+print(f"lst is sorted: {is_sorted(lst)}")
+if not is_sorted(lst):
+    print(lst[0:not_sorted_index(lst)+2])
+#print()
+#print(lst2)
+#print(f"lst2 is sorted: {is_sorted(lst2)}")
