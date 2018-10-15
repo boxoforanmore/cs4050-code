@@ -26,12 +26,19 @@ def quick_sort_no_recur(lst):
             pivot = lst[start]
 
             i = start + 1
-            j = start + 1
+            #j = start + 1
 
-            while (i <= j):
-                while (i < (len(lst)-1)) and (lst[i] < pivot):
+            for j in range(i, end):
+                if (lst[j] <= pivot):
+                    lst[i], lst[j] = lst[j], lst[i]
                     i += 1
-                while (j < (len(lst)-1)) and (lst[j] > pivot):
+            lst[start], lst[i-1] = lst[i-1], lst[start]
+
+            '''
+            while (i <= j) or end not in (i, j):
+                while (i <= (len(lst)-1)) and (lst[i] < pivot):
+                    i += 1
+                while (j <= (len(lst)-1)) and (lst[j] > pivot):
                     j += 1
                 if (i <= j):
                     lst[i], lst[j] = lst[j], lst[i]
@@ -39,13 +46,12 @@ def quick_sort_no_recur(lst):
                         i += 1
                         j += 1
                     else:
-                        break
+                        pass
                 else:
                     lst[j], lst[i] = lst[i], lst[j]
-            if start < j:
-                stack.append((start, i))
-            if i < end:
-                stack.append((j, end))
+            '''
+            stack.append((start, i))
+            stack.append((i, end))
 
 
 def quick_sort(lst):
@@ -87,7 +93,7 @@ def partition(lst, start, end):
             partition(lst, j, end)
 
 def insertion_sort(lst, low, high):
-    print("hi, it's me")
+    print(f"low: {low}, high:{high}")
     if low == high:
         return
     for i in range(low, high+1):
@@ -120,11 +126,13 @@ lst = random.sample(range(10000), 500)
 lst2 = deepcopy(lst)
 print(lst)
 quick_sort(lst)
-#quick_sort_no_recur(lst2)
 print(lst)
 print(f"lst is sorted: {is_sorted(lst)}")
 if not is_sorted(lst):
     print(lst[0:not_sorted_index(lst)+2])
-#print()
-#print(lst2)
-#print(f"lst2 is sorted: {is_sorted(lst2)}")
+print()
+quick_sort_no_recur(lst2)
+print(lst2)
+print(f"lst2 is sorted: {is_sorted(lst2)}")
+if not is_sorted(lst2):
+    print(lst[0:not_sorted_index(lst2)+2])
