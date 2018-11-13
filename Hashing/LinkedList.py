@@ -10,9 +10,13 @@ class LinkedList(object):
 
     def __init__(self, initial=None):
         self.front = self.back = self.current = None
+        self.length = 0
         if initial != None:
             for element in tuple(initial):
                 self.push_front(element)
+
+    def __len__(self):
+        return self.length
 
     def empty(self):
         return self.front == self.back == None
@@ -57,6 +61,7 @@ class LinkedList(object):
         else:
             new.next_node = self.front
             self.front = new
+        self.length += 1
 
 
     def pop_front(self):
@@ -66,12 +71,14 @@ class LinkedList(object):
         if self.front == self.back:
             value = self.front.value
             self.front = self.back = None
+            self.length -= 1
             return value
         else:
             tmp = self.front.next_node
             value = self.front.value
             self.front.next_node = None
             self.front = tmp
+            self.length -= 1
             return value
 
 
@@ -79,9 +86,11 @@ class LinkedList(object):
         new = self.Node(value, None)
         if self.empty():
             self.front = self.back = new
+            self.length += 1
             return
         self.back.next_node = new
         self.back = new
+        self.length += 1
 
 
     def pop_back(self):
@@ -90,6 +99,7 @@ class LinkedList(object):
         if self.front is self.back:
             value = self.front.value
             self.front = self.back = None
+            self.length -= 1
             return value
         else:
             current = self.front
@@ -98,6 +108,7 @@ class LinkedList(object):
             value = current.next_node.value
             current.next_node = None
             self.back = current
+            self.length -= 1
             return value
 
     
@@ -120,12 +131,14 @@ class LinkedList(object):
                 prev.next_node = nxt 
                 current.next_node = None
                 current = None
+                self.length -= 1
                 return
             while current is not self.back:
                 if current.value is value:
                     prev.next_node = nxt
                     current.next_node = None
                     current = None
+                    self.length -= 1
                     return
                 else:
                     prev = current
@@ -153,6 +166,7 @@ class LinkedList(object):
                 temp = prev.next_node
                 current = self.Node(value, temp)
                 prev.next_node = current
+                self.length += 1
                 return
             prev = prev.next_node
 
@@ -363,6 +377,58 @@ class BasicTests(unittest.TestCase):
     def test_find_false(self):
         linked_list = LinkedList((2, 4, 6))
         self.assertFalse(linked_list.find(3))
+
+    def test_length_empty(self):
+        self.assertEqual(len(LinkedList()), 0)
+
+    def test_length_push_front_pop_front(self):
+        linked_list = LinkedList()
+        linked_list.push_front(4)
+        self.assertEqual(len(linked_list), 1)
+        linked_list.pop_front()
+        self.assertEqual(len(linked_list), 0)
+
+    def test_length_push_back_pop_back(self):
+        linked_list = LinkedList()
+        linked_list.push_back(4)
+        self.assertEqual(len(linked_list), 1)
+        linked_list.pop_back()
+        self.assertEqual(len(linked_list), 0)
+
+    def test_length_insert_pop_back(self):
+        linked_list = LinkedList()
+        linked_list.insert(5)
+        self.assertEqual(len(linked_list), 1)
+        linked_list.pop_back()
+        self.assertEqual(len(linked_list), 0)
+
+    def test_length_all(self):
+        linked_list = LinkedList()
+        items1 = tuple(range(1, 10))
+        items2 = tuple(range(11, 30))
+        items3 = tuple(range(31, 50))
+        count = 0
+        for item in items1:
+            linked_list.push_front(item)
+            count += 1
+        for item in items2:
+            linked_list.push_back(item)
+            count += 1
+        for item in items3:
+            linked_list.insert(item)
+            count += 1
+        self.assertEqual(len(linked_list), count)
+        for i in range(1, 10):
+            linked_list.pop_back()
+            linked_list.pop_front()
+            count -= 2
+        self.assertEqual(len(linked_list), count)
+        for i in range(13, 25):
+            linked_list.delete(i)
+            count -= 1
+        self.assertEqual(len(linked_list), count)
+
+
 
 if '__main__' == __name__:
     unittest.main()
