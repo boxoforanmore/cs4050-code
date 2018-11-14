@@ -13,7 +13,7 @@ class LinkedList(object):
         self.length = 0
         if initial != None:
             for element in tuple(initial):
-                self.push_front(element)
+                self.insert(element)
 
     def __len__(self):
         return self.length
@@ -39,14 +39,10 @@ class LinkedList(object):
         if self.front == self.back:
             return str(self.front.value)
         output = ''
-        tmp = self.back
-        tmp2 = None
-        while tmp is not self.front:
-            tmp2 = self.front
+        tmp = self.front
+        while tmp is not self.back:
             output += str(tmp.value) + ', '
-            while tmp2.next_node is not tmp:
-                tmp2 = tmp2.next_node
-            tmp = tmp2
+            tmp = tmp.next_node
         return (output + str(tmp.value))
 
 
@@ -154,15 +150,15 @@ class LinkedList(object):
         if self.empty():
             self.push_front(value)
             return
-        if self.front.value > value:
+        if hash(self.front.value) > hash(value):
             self.push_front(value)
             return
-        if self.back.value < value:
+        if hash(self.back.value) < hash(value):
             self.push_back(value)
             return 
         prev = self.front
         while prev.next_node != None:
-            if prev.next_node.value > value:
+            if hash(prev.next_node.value) > hash(value):
                 temp = prev.next_node
                 current = self.Node(value, temp)
                 prev.next_node = current
@@ -246,10 +242,10 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(linked_list.empty())
 
     def test_init(self):
-        linked_list = LinkedList(("one", 2, 3.141592))
-        self.assertEqual(linked_list.pop_back(), "one")
-        self.assertEqual(linked_list.pop_back(), 2)
+        linked_list = LinkedList((1, 2, 3.141592))
         self.assertEqual(linked_list.pop_back(), 3.141592)
+        self.assertEqual(linked_list.pop_back(), 2)
+        self.assertEqual(linked_list.pop_back(), 1)
 
     def test_str(self):
         linked_list = LinkedList((1, 2, 3))
@@ -258,7 +254,7 @@ class BasicTests(unittest.TestCase):
     def test_iter(self):
         nums = [2, 1, 8]
         linked_list = LinkedList(nums)
-        nums = [8, 1, 2]
+        nums.sort()
         for num, item in enumerate(linked_list):
             self.assertEqual(item, nums[num])
 
@@ -320,7 +316,7 @@ class BasicTests(unittest.TestCase):
 
     def test_find_middle_of_two(self):
         linked_list = LinkedList((1, 2))
-        self.assertEqual(linked_list.middle(), 1)
+        self.assertEqual(linked_list.middle(), 2)
 
     def test_find_middle_of_three(self):
         linked_list = LinkedList((1, 2, 3))
@@ -328,7 +324,7 @@ class BasicTests(unittest.TestCase):
 
     def test_find_middle_of_four(self):
         linked_list = LinkedList((1, 2, 3, 4))
-        self.assertEqual(linked_list.middle(), 2)
+        self.assertEqual(linked_list.middle(), 3)
 
     def test_find_middle_of_five(self):
         linked_list = LinkedList((1, 2, 3, 4, 5))
@@ -336,7 +332,7 @@ class BasicTests(unittest.TestCase):
 
     def test_find_middle_of_20(self):
         linked_list = LinkedList(tuple(range(1, 21))) 
-        self.assertEqual(linked_list.middle(), 10)
+        self.assertEqual(linked_list.middle(), 11)
 
     def test_find_middle_of_103(self):
         linked_list = LinkedList(tuple(range(1, 104)))
@@ -356,12 +352,13 @@ class BasicTests(unittest.TestCase):
         length = len(nums)
         for num in nums:
             linked_list.insert(num)
+        nums.sort()
         test = ''
-        for num, item in enumerate(reversed(sorted(nums))):
-            if num == length-1:
-                test += str(item)
-                break
-            test += str(item) + ', '
+        index = 0
+        while index != (length-1):
+            test += str(nums[index]) + ', '
+            index += 1
+        test += str(nums[index])
         self.assertEqual(str(linked_list), test)
 
     def test_find_none(self):
