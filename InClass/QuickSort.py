@@ -86,7 +86,6 @@ def find_kth(lst, k):
 
 def quick_sort_three_way(lst):
     partition_three_way(lst, 0, len(lst)-1)
-    pass
 
 def partition_three_way(lst, start, end):
     if (end - start + 1) <= 15:
@@ -102,32 +101,39 @@ def partition_three_way(lst, start, end):
             lst[start], lst[mid] = lst[mid], lst[start]
     pivot = lst[start]
     low = int(start)
-    hi = int(end)
-    i = low + 1
-    
-    while (i < hi) and (len(lst) not in (i, hi)):
-        if (lst[i] < pivot):
-            lst[low], lst[i] = lst[i], lst[low]
-            low += 1
-            i += 1
-        elif (lst[i] > pivot):
-            lst[hi], lst[i] = lst[i], lst[hi]
-            hi += 1
-        else:
-            i += 1
+    eqs = int(end)
+    i = low
 
-    #print(lst)
+    while lst[eqs] == pivot:
+        eqs -= 1
 
-    partition_three_way(lst, 0, low-1)
-    partition_three_way(lst, hi+1, end)
+    j = i + 1
+    while (j != eqs):
+        if lst[j] == pivot:
+            lst[j], lst[eqs] = lst[eqs], lst[j]
+            eqs -= 1
+        if lst[j] < pivot:
+            i += 1
+            lst[j], lst[i] = lst[i], lst[j]
+        j += 1
+
+    lst[start], lst[i] = lst[i], lst[start]
+
+    mid = int(i - 1)
+    while eqs != end+1:
+        i += 1
+        lst[i], lst[eqs] = lst[eqs], lst[i]
+        eqs += 1
+          
+    partition_three_way(lst, low, mid)
+    partition_three_way(lst, i, end)
 
 def insertion_sort(lst, low, high):
-    ##print(f"low: {low}, high:{high}")
     if low == high:
         return
     for i in range(low, high+1):
         j = i - 1 
-        while(j >= 0) and (lst[j] > lst[j+1]):
+        while(j >= low) and (lst[j] > lst[j+1]):
             temp = lst[j+1]
             lst[j+1] = lst[j]
             lst[j] = temp
@@ -151,45 +157,23 @@ def not_sorted_index(lst):
         index1 += 1
     return None
 
-lst1 = random.sample(range(10000), 500)
-lst2 = deepcopy(lst1)
+if __name__ == '__main__':
+    lst1 = random.sample(range(10000), 500)
+    lst2 = deepcopy(lst1)
+    lst3 = deepcopy(lst1)
 
+    print()
+    print("Recursive quicksort")
+    quick_sort(lst1)
+    print(f"Is Sorted: {is_sorted(lst1)}")
+    print()
+    print()
+    print("Non-recursive quicksort")
+    quick_sort_no_recur(lst2)
+    print(f"Is Sorted: {is_sorted(lst2)}")
+    print()
+    print()
+    print("Three-way partition quicksort")
+    quick_sort_three_way(lst3)
+    print(f"Is Sorted: {is_sorted(lst3)}")
 print()
-print("Recursive quicksort")
-quick_sort(lst1)
-print(f"Is Sorted: {is_sorted(lst1)}")
-print()
-print()
-print("Non-recursive quicksort")
-quick_sort_no_recur(lst2)
-print(f"Is Sorted: {is_sorted(lst2)}")
-print()
-
-
-'''
-lst = random.sample(range(10000), 500)
-lst2 = deepcopy(lst)
-lst3 = random.sample(range(500), 500)
-print(lst)
-quick_sort(lst)
-print(lst)
-print(f"lst is sorted: {is_sorted(lst)}")
-if not is_sorted(lst):
-    print(lst[0:not_sorted_index(lst)+2])
-print()
-quick_sort_no_recur(lst2)
-print(lst2)
-print(f"lst2 is sorted: {is_sorted(lst2)}")
-if not is_sorted(lst2):
-    print(lst2[0:not_sorted_index(lst2)+2])
-pos = find_kth(lst3, 30)
-print(pos)
-
-lst4 = random.sample(range(10000), 500)
-print(lst4)
-quick_sort_three_way(lst4)
-print(f"lst is sorted: {is_sorted(lst4)}")
-if not is_sorted(lst4):
-    print(lst4[0:not_sorted_index(lst4)+2])
-print(lst4)
-'''
