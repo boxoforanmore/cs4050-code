@@ -3,8 +3,9 @@ import timeit
 import random
 from copy import deepcopy
 
-list_length = 25000
+list_length = 30000
 list_range = 1000000
+iter_num = 5
 
 def wrapper(func, *args, **kwargs):
     def wrapped():
@@ -20,6 +21,7 @@ def shell_sort(lst):
         gaps.insert(0, (x*3) + 1)
     for gap in gaps:
         for index in range(gap, len(lst)):
+            print(lst)
             temp = lst[index]
             index2 = int(index)
             while (index2 >= gap) and (lst[index2-gap] > temp):
@@ -245,19 +247,20 @@ class BasicTests(unittest.TestCase):
 if __name__ == "__main__":
     random_list = random.sample(range(list_range), list_length)
     sort_dict = {}
-    sort_dict["Shell Sort (Shell's sequence)"] = timeit.timeit(wrapper(shell_sort, deepcopy(random_list)), number=10)
-    sort_dict["Shell Sort (A003462)"] = timeit.timeit(wrapper(shell_sort_book, deepcopy(random_list)), number=10)
-    sort_dict["Insertion Sort"] = timeit.timeit(wrapper(insertion_sort, deepcopy(random_list)), number=10)
-    sort_dict["Merge Sort"] = timeit.timeit(wrapper(merge_sort, deepcopy(random_list)), number=10)
-    sort_dict["Tim Sort"] = timeit.timeit(wrapper(tim_sort, deepcopy(random_list)), number=10)
-    sort_dict["Bubble Sort"] = timeit.timeit(wrapper(bubble_sort, deepcopy(random_list)), number=10)
+    sort_dict["Shell Sort (Shell's sequence)"] = timeit.timeit(wrapper(shell_sort, deepcopy(random_list)), number=iter_num)
+    sort_dict["Shell Sort (A003462)"] = timeit.timeit(wrapper(shell_sort_book, deepcopy(random_list)), number=iter_num)
+    sort_dict["Insertion Sort"] = timeit.timeit(wrapper(insertion_sort, deepcopy(random_list)), number=iter_num)
+    sort_dict["Merge Sort"] = timeit.timeit(wrapper(merge_sort, deepcopy(random_list)), number=iter_num)
+    sort_dict["Tim Sort"] = timeit.timeit(wrapper(tim_sort, deepcopy(random_list)), number=iter_num)
+    sort_dict["Bubble Sort"] = timeit.timeit(wrapper(bubble_sort, deepcopy(random_list)), number=iter_num)
     sorted_keys = sorted(sort_dict, key=sort_dict.__getitem__)
 
-    with open("output.txt", "w+") as output:
-        string = "Fastest to Slowest Sorts with Randomized List of " + str(list_length)  + " elements:\n" \
+    with open("sort_comparisons.txt", "a+") as output:
+        string = "\n\nFastest to Slowest Sorts with Randomized List of " + str(list_length)  + " elements (ave. of " + str(iter_num) + " runs):\n" + \
                  "-----------------------------------------------\n"
         for key in sorted_keys:
             string += str(key) + " : " + str(sort_dict[key]) + " seconds\n" \
                       "------------------------\n"
         print(string)
         output.write(string)
+        output.write("\n\n")
