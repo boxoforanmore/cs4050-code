@@ -13,7 +13,7 @@ class Graph(object):
         and the weight
         """
 
-        def __init__(self, to_vertex, weight=1):
+        def __init__(self, to_vertex, weight=1, from_vertex=None):
             """
             The constructor/initializer for the edge object
 
@@ -23,6 +23,10 @@ class Graph(object):
 
             self.weight = weight
             self.to_vertex = to_vertex
+            self.from_vertex = from_vertex
+
+        def __str__(self):
+            return str(self.from_vertex.name + ' --> ' + str(self.weight) + ' --> ' + self.to_vertex.name)
 
 
     class __vertex(object):
@@ -252,11 +256,11 @@ class Graph(object):
         if (None != vertex1) and (None != vertex2):
             if self.hasEdge(name1, name2) and not self.__weighted:
                 return False
-            vertex1.addEdge(self.__edge(vertex2, weight))
+            vertex1.addEdge(self.__edge(vertex2, weight, vertex1))
             if (not self.__directed) and (name1 != name2):
                 if self.hasEdge(name2, name1) and not self.__weighted:
                     return False
-                vertex2.addEdge(self.__edge(vertex1, weight))
+                vertex2.addEdge(self.__edge(vertex1, weight, vertex2))
             return True
         return False
 
@@ -582,6 +586,30 @@ class Graph(object):
                 if extended_path:
                     return extended_path
         return None
+
+    def mst(self):
+        return self.__prims()
+
+    def __prims(self):
+        if self.__directed or not self.isConnected():
+            return None
+        vertices = [self.__vertices[0]]
+        vert_names = []
+        edges = []
+        vert_names.append(vertices[0].name)
+
+        for index in range(1, len(self.__vertices)):
+            temp_weight = float("inf")
+            mins = []
+            for vertex in vertices:
+                for edge in vertex.edges:
+                    if (edge.weight < temp_weight) and (edge.to_vertex not in vertices):
+                        temp_weight = edge.weight
+                        mins.append([edge.weight, edge])
+            min_set = min(mins)
+            vertices.append(min_set[1].to_vertex)
+            edges.append(min_set[1])
+        return edges  
 
     def __findEdges(self):
         """
@@ -1176,6 +1204,77 @@ class TestBasicFunction(unittest.TestCase):
             if vertex != vertices[0]:
                 graph.addEdge(vertices[0], vertex)
         self.assertEqual(graph.network_topo(), "Star")
+
+    def test_prims_directed(self):
+        graph = Graph(directed=True)
+        self.assertEqual(graph.mst(), None)
+
+
+    def test_prims_not_connected(self):
+        graph = Graph()
+        vertices = ['A', 'B', 'C', 'D', 'E']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+        for vertex1 in vertices:
+            for vertex2 in vertices:
+                graph.addEdge(vertex1, vertex2)
+        graph.addVertex('Z')
+        self.assertEqual(graph.mst(), None)
+        
+    def test_prims_simple(self):
+        graph = Graph(weighted=True)
+        vertices = ['A', 'B', 'C', 'D', 'E']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+
+        graph.addEdge('A', 'B', 15)
+        graph.addEdge('A', 'C', 25)
+        graph.addEdge('B', 'E', 10)
+        graph.addEdge('C', 'D', 10)
+        graph.addEdge('C', 'E', 20)
+        mst = graph.mst()
+        output = str()
+
+        for edge in mst:
+            output += str(edge) + ', '
+
+        expected = 'A --> 15 --> B, ' \
+                   'B --> 10 --> E, ' \
+                   'E --> 20 --> C, ' \
+                   'C --> 10 --> D, '
+
+        self.assertEqual(output, expected)
+
+    def test_prims_more_complex(self):
+        graph = Graph(weighted=True)
+        vertices = ['A', 'B', 'C', 'D', 'E', 'F']
+        for vertex in vertices:
+            graph.addVertex(vertex)
+
+        graph.addEdge('A', 'B', 7)
+        graph.addEdge('A', 'D', 4)
+        graph.addEdge('A', 'F', 2)
+        graph.addEdge('A', 'C', 8)
+        graph.addEdge('B', 'C', 9)
+        graph.addEdge('B', 'D', 14)
+        graph.addEdge('C', 'D', 10)
+        graph.addEdge('D', 'E', 2)
+        graph.addEdge('E', 'F', 6)
+        graph.addEdge('F', 'D', 3)
+
+        mst = graph.mst()
+        output = str()
+
+        for edge in mst:
+            output += str(edge) + ', '
+
+        expected = 'A --> 2 --> F, ' \
+                   'F --> 3 --> D, ' \
+                   'D --> 2 --> E, ' \
+                   'A --> 7 --> B, ' \
+                   'A --> 8 --> C, '
+
+        self.assertEqual(output, expected)
 
 if "__main__" == __name__:
     length = len(argv)
