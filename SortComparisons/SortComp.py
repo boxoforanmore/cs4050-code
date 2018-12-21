@@ -21,7 +21,6 @@ def shell_sort(lst):
         gaps.insert(0, (x*3) + 1)
     for gap in gaps:
         for index in range(gap, len(lst)):
-            print(lst)
             temp = lst[index]
             index2 = int(index)
             while (index2 >= gap) and (lst[index2-gap] > temp):
